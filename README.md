@@ -1,2 +1,2 @@
-# MyStuff
-Personal projects and things I just wanted to create
+# Chess
+My friend Thomas and I wanted to create a chess game.
