@@ -26,7 +26,6 @@ def print_board():
 
 '''move(selected_index). Takes in selected index and runs the move algorithm in pieces for the piece'''
 
-
 def move(selected_index):
     raise NameError("Unimplemented")
 
@@ -44,7 +43,7 @@ class Tile:
 
     def draw(self, window):
         x, y = enumerate(self.index)
-        pygame.draw.rect(window, self.color, (x, y, WIDTH / 8, WIDTH / 8))
+        pygame.draw.rect(window, self.color, (x, y, DIMENSION, DIMENSION))
 
 
 
@@ -69,19 +68,17 @@ def draw_grid(win, rows, width):
         for j in range(rows):
             pygame.draw.line(win, WHITE, (j * gap, 0), (j * gap, width))
 
+def main():
+    draw_grid(window, DIMENSION, WIDTH)
+    pygame.display.update()
 
-draw_grid(window, DIMENSION, WIDTH)
-pygame.display.update()
+    while True:
+        pygame.time.delay(50)
 
+        # causes exit not to break
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-while True:
-    pygame.time.delay(50)
-
-    # causes exit not to break
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-
-
-
+main()
