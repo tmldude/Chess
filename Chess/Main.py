@@ -5,7 +5,10 @@ import sys
 import Piece
 import Board
 
-board = [['  ' for i in range(8)] for i in range(8)]
+WIDTH = HEIGHT = 800
+DIMENSION = 8
+
+board = [['  ' for i in range(DIMENSION)] for i in range(DIMENSION)]
 
 '''adds all the pieces to the appropriate squares'''
 
@@ -49,10 +52,7 @@ class Tile:
 def tile_generator():
     raise NameError("unimplemented")
 
-
-WIDTH = 800
-
-window = pygame.display.set_mode((WIDTH, WIDTH))
+window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Chess")
 
 WHITE = (255, 255, 255)
@@ -63,14 +63,14 @@ BLACK = (0, 0, 0)
 
 
 def draw_grid(win, rows, width):
-    gap = width // 8
+    gap = width // DIMENSION
     for i in range(rows):
         pygame.draw.line(win, WHITE, (0, i * gap), (width, i * gap))
         for j in range(rows):
             pygame.draw.line(win, WHITE, (j * gap, 0), (j * gap, width))
 
 
-draw_grid(window, 8, WIDTH)
+draw_grid(window, DIMENSION, WIDTH)
 pygame.display.update()
 
 
