@@ -1,5 +1,4 @@
 
-'''The piece class'''
 class Pieces:
     def __int__(self, name, color, image, is_king = False):
         self.name = name
@@ -30,7 +29,7 @@ class Pieces:
         raise NameError("Unimplemented")
 
     '''Queen move function: takes in index of selected queen and outputs possible queen moves'''
-    def bishop_move(self, index: (int, int)) -> list[(int, int)]:
+    def queen_move(self, index: (int, int)) -> list[(int, int)]:
         raise NameError("Unimplemented")
 
     '''King move function: takes in index of selected king and outputs possible king moves'''
