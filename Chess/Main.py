@@ -8,6 +8,17 @@ import Board
 board = [['  ' for i in range(8)] for i in range(8)]
 pieces = {}  # Dictionary to assign piece names to their respective images
 
+WIDTH = HEIGHT = 800
+
+window = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Chess")
+
+WHITE = (255, 255, 255)
+GREY = (128, 128, 128)
+YELLOW = (204, 204, 0)
+BLUE = (50, 255, 255)
+BLACK = (0, 0, 0)
+
 def init_pieces():
     piece_names = ['white_king', 'white_queen', 'white_rook', 'white_bishop', 'white_knight', 'white_pawn',
                    'black_king', 'black_queen', 'black_rook', 'black_bishop', 'black_knight', 'black_pawn']
@@ -61,6 +72,7 @@ class Tile:
 
 '''Generates all tiles and defines the colors/specifications uses the draw function in tile'''
 def tile_generator(win, num_row):
+    font = pygame.font.Font(None, 25)
     all_tiles = []
     tile_count = 0
     last_color_white = True
@@ -85,16 +97,7 @@ def tile_generator(win, num_row):
     return all_tiles
 
 
-WIDTH = 800
 
-window = pygame.display.set_mode((WIDTH, WIDTH))
-pygame.display.set_caption("Chess")
-
-WHITE = (255, 255, 255)
-GREY = (128, 128, 128)
-YELLOW = (204, 204, 0)
-BLUE = (50, 255, 255)
-BLACK = (0, 0, 0)
 
 
 def draw_grid(win, rows, width):
@@ -114,22 +117,24 @@ def place_pieces(win, all_tiles):
             img = pygame.image.load('bird.png')
             img.convert()
 '''
-pygame.init()
-init_pieces()
-font = pygame.font.Font(None, 25)
-#draw_grid(window, 8, WIDTH)
-all_tiles = tile_generator(window, 8)
-pygame.display.update()
 
 
-while True:
-    pygame.time.delay(50)
+def main():
+    pygame.init()
+    init_pieces()
+    #draw_grid(window, 8, WIDTH)
+    all_tiles = tile_generator(window, 8)
+    pygame.display.update()
 
-    # causes exit not to break
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+    while True:
+        pygame.time.delay(50)
+
+        # causes exit not to break
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
 
-
+if __name__ == "__main__":
+    main()
