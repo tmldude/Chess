@@ -95,7 +95,7 @@ current piece, color, etc'''
 
 
 class Tile:
-    def __int__(self, index: (int, int), chess_id, color, current_piece=' '):
+    def __init__(self, index: (int, int), chess_id, color, current_piece=' '):
         self.index = index
         self.chess_id = chess_id
         self.color = color
@@ -154,10 +154,10 @@ def draw_grid(win, rows, width):
         for j in range(rows):
             pygame.draw.line(win, WHITE, (j * gap, 0), (j * gap, width))
 
-''' 
-    Implemented piece rendering, only bishops for now. I imagine to get starting position correct
-    we will need to set current_piece in the tile_gen function above
-'''
+
+''' Places pieces and their images on starting tiles. '''
+
+
 def place_pieces(win, all_tiles):
     for key in piece_loc:
         x_co, y_co = key
