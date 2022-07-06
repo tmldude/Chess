@@ -1,4 +1,3 @@
-
 class Pieces:
     def __int__(self, name, color, image, is_king = False):
         self.name = name

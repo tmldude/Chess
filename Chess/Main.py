@@ -6,68 +6,19 @@ from Piece import Pieces
 import Board
 
 board = [['  ' for i in range(8)] for i in range(8)]
+pieces = {}  # Dictionary to assign piece names to their respective images
 
-'''piece declarations'''
-#name, color, image, is_king = False
-white_bishop = Pieces()
-white_bishop.name = "bi"
-white_bishop.color = "w"
-white_bishop.image = "piece_images/white_bishop.png"
+def init_pieces():
+    piece_names = ['white_king', 'white_queen', 'white_rook', 'white_bishop', 'white_knight', 'white_pawn',
+                   'black_king', 'black_queen', 'black_rook', 'black_bishop', 'black_knight', 'black_pawn']
+    for p in piece_names:
+        new_piece = Pieces()
+        new_piece.name = p
+        new_piece.color = p[0]
+        new_piece.image = "piece_images/" + p + ".png"
 
-white_rook = Pieces()
-white_rook.name = "rk"
-white_rook.color = "w"
-white_rook.image = "piece_images/white_rook.png"
+        pieces[p] = new_piece
 
-white_knight = Pieces()
-white_knight.name = "kn"
-white_knight.color = "w"
-white_knight.image = "piece_images/white_knight.png"
-
-white_queen = Pieces()
-white_queen.name = "qu"
-white_queen.color = "w"
-white_queen.image = "piece_images/white_queen.png"
-
-white_king = Pieces()
-white_king.name = "ki"
-white_king.color = "w"
-white_king.image = "piece_images/white_king.png"
-
-white_pawn = Pieces()
-white_pawn.name = "pa"
-white_pawn.color = "w"
-white_pawn.image = "piece_images/white_pawn.png"
-
-black_bishop = Pieces()
-black_bishop.name = "bi"
-black_bishop.color = "b"
-black_bishop.image = "piece_images/black_bishop.png"
-
-black_rook = Pieces()
-black_rook.name = "rk"
-black_rook.color = "b"
-black_rook.image = "piece_images/black_rook.png"
-
-black_knight = Pieces()
-black_knight.name = "kn"
-black_knight.color = "b"
-black_knight.image = "piece_images/black_knight.png"
-
-black_queen = Pieces()
-black_queen.name = "qu"
-black_queen.color = "b"
-black_queen.image = "piece_images/black_queen.png"
-
-black_king = Pieces()
-black_king.name = "ki"
-black_king.color = "b"
-black_king.image = "piece_images/black_king.png"
-
-black_pawn = Pieces()
-black_pawn.name = "pa"
-black_pawn.color = "b"
-black_pawn.image = "piece_images/black_pawn.png"
 
 '''adds all the pieces to the appropriate squares'''
 
@@ -164,6 +115,7 @@ def place_pieces(win, all_tiles):
             img.convert()
 '''
 pygame.init()
+init_pieces()
 font = pygame.font.Font(None, 25)
 #draw_grid(window, 8, WIDTH)
 all_tiles = tile_generator(window, 8)
