@@ -10,6 +10,7 @@ pieces = {}  # Dictionary to assign piece names to their respective images
 
 WIDTH = HEIGHT = 800
 DIMENSIONS = 8
+SQUARE = WIDTH // DIMENSIONS
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Chess")
@@ -99,7 +100,7 @@ def tile_generator(win):
             temp_tile.draw(win)
 
             text = font.render(temp_tile.chess_id, True, opposite_color)
-            text_rect = text.get_rect(center=(i * (WIDTH / DIMENSIONS) + (HEIGHT / DIMENSIONS) - 15, j * (WIDTH / DIMENSIONS) + (HEIGHT / DIMENSIONS) - 10))
+            text_rect = text.get_rect(center=(i * SQUARE + SQUARE - 15, j * SQUARE + SQUARE - 10))
             window.blit(text, text_rect)
 
     return all_tiles
@@ -118,7 +119,7 @@ def place_pieces(win, all_tiles):
         for j in range(DIMENSIONS):
             img = pygame.image.load('piece_images/black_bishop.png')
             img.convert()
-            win.blit(img, pygame.Rect(i*(WIDTH / DIMENSIONS), j*(HEIGHT / DIMENSIONS), (HEIGHT / DIMENSIONS), (HEIGHT / DIMENSIONS)))
+            win.blit(img, pygame.Rect(i*SQUARE, j*SQUARE, SQUARE, SQUARE))
 
 
 def main():
