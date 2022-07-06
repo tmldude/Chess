@@ -20,10 +20,10 @@ GREY = (128, 128, 128)
 YELLOW = (204, 204, 0)
 BLUE = (50, 255, 255)
 BLACK = (0, 0, 0)
-LIGHT_BLUE = (195, 216, 228)
-DARK_BLUE = (78, 109, 128)
+LIGHT_BLUE = (195, 216, 228)  # Made these in case pure white and black interfere with the
+DARK_BLUE = (78, 109, 128)    # colors of the pieces
 
-
+''' To access piece images call from dictionary pieces. Ex: pieces['white_king'] '''
 def init_pieces():
     piece_names = ['white_king', 'white_queen', 'white_rook', 'white_bishop', 'white_knight', 'white_pawn',
                    'black_king', 'black_queen', 'black_rook', 'black_bishop', 'black_knight', 'black_pawn']
@@ -113,7 +113,10 @@ def draw_grid(win, rows, width):
         for j in range(rows):
             pygame.draw.line(win, WHITE, (j * gap, 0), (j * gap, width))
 
-
+''' 
+    Implemented piece rendering, only bishops for now. I imagine to get starting position correct
+    we will need to set current_piece in the tile_gen function above
+'''
 def place_pieces(win, all_tiles):
     for i in range(DIMENSIONS):
         for j in range(DIMENSIONS):
