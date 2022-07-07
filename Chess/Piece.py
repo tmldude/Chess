@@ -1,9 +1,21 @@
 class Pieces:
-    def __int__(self, name, color, image, is_king = False):
+    def __init__(self, name, color, image, is_king=False):
         self.name = name
         self.color = color
         self.image = image
         self.is_king = is_king
+
+    def __init__(self, piece):  # Copy constructor
+        self.name = piece.name
+        self.color = piece.color
+        self.image = piece.image
+        self.is_king = piece.is_king
+
+    def __init__(self):  # Default constructor
+        self.name = None
+        self.color = None
+        self.image = None
+        self.is_king = None
 
 
     '''The individual piece functions output ALL possible moves on a 8x8 chess board for the piece at the 

@@ -95,7 +95,7 @@ current piece, color, etc'''
 
 
 class Tile:
-    def __init__(self, index: (int, int), chess_id, color, current_piece=' '):
+    def __int__(self, index: (int, int), chess_id, color, current_piece=' '):
         self.index = index
         self.chess_id = chess_id
         self.color = color
@@ -168,12 +168,15 @@ def place_pieces(win, all_tiles):
         except AttributeError:
             pass
 
+
 def main():
     pygame.init()
     print_board()
     # draw_grid(window, DIMENSIONS, WIDTH)
     all_tiles = tile_generator(window)
     place_pieces(window, all_tiles)
+    selected_tile = ()  # Tracks last click of user
+    last_two_tile = []
     pygame.display.update()
 
     while True:
@@ -184,10 +187,43 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == MOUSEBUTTONDOWN:
-                moving = True
-            elif event.type == MOUSEBUTTONUP:
-                moving = False
+            elif event.type == MOUSEBUTTONDOWN:      # Two clicks to move, not drag and drop.
+                mouse_coords = pygame.mouse.get_pos()
+                file = mouse_coords[0] // SQUARE
+                rank = mouse_coords[1] // SQUARE
+                if selected_tile == (file, rank):  # Double click square is undo
+                    selected_tile = ()
+                    last_two_tile = []
+                else:
+                    selected_tile = (file, rank)  # Reversed because horizontal view
+                    last_two_tile.append(selected_tile)
+                if len(last_two_tile) == 2:
+                    start_rank = last_two_tile[0][0]
+                    start_file = last_two_tile[0][1]
+                    end_rank = last_two_tile[1][0]
+                    end_file = last_two_tile[1][1]
+
+                    '''
+                        TODO: This is where the code breaks. The idea is to access piece_loc and switch the pieces on
+                        their respective tiles given the index from the mouse clicks. 
+                    '''
+                    # temp_piece = Pieces(piece_loc.get(start_file, start_rank))
+                    # piece_loc[(end_file, end_rank)] = temp_piece
+
+                    # debug
+                    print("Start: " + str(start_file) + "," + str(start_rank))
+                    print("End: " + str(end_file) + "," + str(end_rank))
+
+                    place_pieces(window, all_tiles)
+
+                    last_two_tile = []
+                    selected_tile = ()
+
+                else:
+                    pass
+
+            else:
+                pass
 
 
 if __name__ == "__main__":
