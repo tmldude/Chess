@@ -16,6 +16,7 @@ class Pieces:
         self.color = None
         self.image = None
         self.is_king = None
+        self.active_image = None
 
 
     '''The individual piece functions output ALL possible moves on a 8x8 chess board for the piece at the 

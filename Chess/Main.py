@@ -5,7 +5,6 @@ import sys
 from pygame import MOUSEBUTTONDOWN, MOUSEBUTTONUP
 
 from Piece import Pieces
-import Board
 
 
 WIDTH = HEIGHT = 800
@@ -65,33 +64,16 @@ for key_coord in piece_loc:
     except AttributeError:
         board[x_c][y_c] = piece_loc.get(key_coord)
 
-print(piece_loc)
-
-'''adds all the pieces to the appropriate squares'''
-
-
-def board_setup():
-    raise NameError("Unimplemented")
-
 
 '''prints the board function'''
-
-
 def print_board():
     for i in range(8):
         print(board[i])
 
 
 '''move(selected_index). Takes in selected index and runs the move algorithm in pieces for the piece'''
-
-
 def move(selected_index):
     raise NameError("Unimplemented")
-
-
-'''I added some basic code that creates a grid on a blank canvas, from here we need to create a TILE class
-that should have all the entities that go along with tiles like the chess location (a1, a2) the index (0,0)(1,1)
-current piece, color, etc'''
 
 
 class Tile:
@@ -144,9 +126,12 @@ def tile_generator(win):
             text_rect = text.get_rect(center=(i * SQUARE + SQUARE - 15, j * SQUARE + SQUARE - 10))
             window.blit(text, text_rect)
 
+            temp_tile.current_piece = piece_loc.get((i,j))
+
     return all_tiles
 
 
+''' Depreciated '''
 def draw_grid(win, rows, width):
     gap = width // 8
     for i in range(rows):
@@ -156,15 +141,13 @@ def draw_grid(win, rows, width):
 
 
 ''' Places pieces and their images on starting tiles. '''
-
-
 def place_pieces(win, all_tiles):
     for key in piece_loc:
         x_co, y_co = key
         try:
-            img = pygame.image.load(piece_loc[key].image)
-            img.convert()
-            win.blit(img, pygame.Rect(x_co * SQUARE + 20, y_co * SQUARE + 20, SQUARE, SQUARE))
+            piece_loc[key].active_image = pygame.image.load(piece_loc[key].image)
+            piece_loc[key].active_image.convert()
+            win.blit(piece_loc[key].active_image, pygame.Rect(x_co * SQUARE + 20, y_co * SQUARE + 20, SQUARE, SQUARE))
         except AttributeError:
             pass
 
@@ -172,7 +155,6 @@ def place_pieces(win, all_tiles):
 def main():
     pygame.init()
     print_board()
-    # draw_grid(window, DIMENSIONS, WIDTH)
     all_tiles = tile_generator(window)
     place_pieces(window, all_tiles)
     selected_tile = ()  # Tracks last click of user
@@ -200,19 +182,50 @@ def main():
                 if len(last_two_tile) == 2:
                     start_rank = last_two_tile[0][0]
                     start_file = last_two_tile[0][1]
+
+                    print("--------------------------------")
+                    try:
+                        print("Chose: " + piece_loc.get((start_rank,start_file)).name)
+                    except AttributeError:
+                        print("Chose: ")
+
                     end_rank = last_two_tile[1][0]
                     end_file = last_two_tile[1][1]
 
-                    '''
-                        TODO: This is where the code breaks. The idea is to access piece_loc and switch the pieces on
-                        their respective tiles given the index from the mouse clicks. 
-                    '''
-                    # temp_piece = Pieces(piece_loc.get(start_file, start_rank))
-                    # piece_loc[(end_file, end_rank)] = temp_piece
+                    try:
+                        print("Chose: " + piece_loc.get((end_rank, end_file)).name)
+                    except AttributeError:
+                        print("Chose: ")
 
-                    # debug
+                    print("                ----------------")
                     print("Start: " + str(start_file) + "," + str(start_rank))
                     print("End: " + str(end_file) + "," + str(end_rank))
+                    print("                ----------------")
+
+                    '''The code finds the right pieces now, but still cannot move them. Check console for updates
+                    when clicking pieces'''
+                    '''Blit does not remove the old image and the only way to delete an image is to update
+                    the whole scene. Movement still needs work. Also updates piece_loc and board need to be done
+                    as well'''
+                    # debug
+                    try:
+                        chosen_piece = piece_loc.get((start_rank,start_file))
+                        new = window.blit(chosen_piece.active_image, (end_rank * SQUARE, end_file * SQUARE))
+                        #chosen_piece.active_image.get_rect().x = end_rank * SQUARE + 20
+                        #chosen_piece.active_image.get_rect().y = end_file * SQUARE + 20
+                        pygame.display.update()
+                        print("updated")
+                        print("--------------------------------")
+                    except AttributeError:
+                        print("you did not choose a piece")
+
+
+                    '''
+                    piece_loc.get(start_file,start_rank).active_image = pygame.image.load(piece_loc[key].image)
+                    piece_loc[key].active_image.convert()
+                    win.blit(piece_loc[key].active_image,
+                        pygame.Rect(x_co * SQUARE + 20, y_co * SQUARE + 20, SQUARE, SQUARE))'''
+
 
                     place_pieces(window, all_tiles)
 
@@ -224,6 +237,7 @@ def main():
 
             else:
                 pass
+        pygame.display.update()
 
 
 if __name__ == "__main__":
