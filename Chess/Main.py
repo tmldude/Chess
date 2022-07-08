@@ -6,7 +6,6 @@ from pygame import MOUSEBUTTONDOWN, MOUSEBUTTONUP
 
 from Piece import Pieces
 
-
 WIDTH = HEIGHT = 800
 DIMENSIONS = 8
 SQUARE = WIDTH // DIMENSIONS
@@ -20,8 +19,7 @@ YELLOW = (204, 204, 0)
 BLUE = (50, 255, 255)
 BLACK = (0, 0, 0)
 LIGHT_BLUE = (195, 216, 228)  # Made these in case pure white and black interfere with the
-DARK_BLUE = (78, 109, 128)    # colors of the pieces
-
+DARK_BLUE = (78, 109, 128)  # colors of the pieces
 
 board = [['  ' for i in range(8)] for i in range(8)]
 
@@ -40,21 +38,21 @@ for p in piece_names:
 
 # assigned indexes to pieces using the pieces dictionary
 piece_loc = {(0, 0): pieces["white_rook"], (0, 1): pieces["white_knight"],
-    (0, 2): pieces["white_bishop"], (0, 3): pieces["white_king"], (0, 4): pieces["white_queen"],
-    (0, 5): pieces["white_bishop"],(0, 6): pieces["white_knight"],(0, 7): pieces["white_rook"],
-    (1, 0): pieces["white_pawn"], (1, 1): pieces["white_pawn"], (1, 2): pieces["white_pawn"],
-    (1, 3): pieces["white_pawn"], (1, 4): pieces["white_pawn"], (1, 5): pieces["white_pawn"],
-    (1, 6): pieces["white_pawn"], (1, 7): pieces["white_pawn"],
-    (2, 0): " ", (2, 1): " ", (2, 2): " ", (2, 3): " ", (2, 4): " ", (2, 5): " ", (2, 6): " ", (2, 7): " ",
-    (3, 0): " ", (3, 1): " ", (3, 2): " ", (3, 3): " ", (3, 4): " ", (3, 5): " ", (3, 6): " ", (3, 7): " ",
-    (4, 0): " ", (4, 1): " ", (4, 2): " ", (4, 3): " ", (4, 4): " ", (4, 5): " ", (4, 6): " ", (4, 7): " ",
-    (5, 1): " ", (5, 2): " ", (5, 3): " ", (5, 4): " ", (5, 5): " ", (5, 6): " ", (5, 7): " ",
-    (6, 0): pieces["black_pawn"], (6, 1): pieces["black_pawn"], (6, 2): pieces["black_pawn"],
-    (6, 3): pieces["black_pawn"],
-    (6, 4): pieces["black_pawn"], (6, 5): pieces["black_pawn"],(6, 6): pieces["black_pawn"],
-    (6, 7): pieces["black_pawn"], (7, 0): pieces["black_rook"], (7, 1): pieces["black_knight"],
-    (7, 2): pieces["black_bishop"], (7, 3): pieces["black_king"], (7, 4): pieces["black_queen"],
-    (7, 5): pieces["black_bishop"], (7, 6): pieces["black_knight"], (7, 7): pieces["black_rook"]}
+             (0, 2): pieces["white_bishop"], (0, 3): pieces["white_king"], (0, 4): pieces["white_queen"],
+             (0, 5): pieces["white_bishop"], (0, 6): pieces["white_knight"], (0, 7): pieces["white_rook"],
+             (1, 0): pieces["white_pawn"], (1, 1): pieces["white_pawn"], (1, 2): pieces["white_pawn"],
+             (1, 3): pieces["white_pawn"], (1, 4): pieces["white_pawn"], (1, 5): pieces["white_pawn"],
+             (1, 6): pieces["white_pawn"], (1, 7): pieces["white_pawn"],
+             (2, 0): " ", (2, 1): " ", (2, 2): " ", (2, 3): " ", (2, 4): " ", (2, 5): " ", (2, 6): " ", (2, 7): " ",
+             (3, 0): " ", (3, 1): " ", (3, 2): " ", (3, 3): " ", (3, 4): " ", (3, 5): " ", (3, 6): " ", (3, 7): " ",
+             (4, 0): " ", (4, 1): " ", (4, 2): " ", (4, 3): " ", (4, 4): " ", (4, 5): " ", (4, 6): " ", (4, 7): " ",
+             (5, 1): " ", (5, 2): " ", (5, 3): " ", (5, 4): " ", (5, 5): " ", (5, 6): " ", (5, 7): " ",
+             (6, 0): pieces["black_pawn"], (6, 1): pieces["black_pawn"], (6, 2): pieces["black_pawn"],
+             (6, 3): pieces["black_pawn"],
+             (6, 4): pieces["black_pawn"], (6, 5): pieces["black_pawn"], (6, 6): pieces["black_pawn"],
+             (6, 7): pieces["black_pawn"], (7, 0): pieces["black_rook"], (7, 1): pieces["black_knight"],
+             (7, 2): pieces["black_bishop"], (7, 3): pieces["black_king"], (7, 4): pieces["black_queen"],
+             (7, 5): pieces["black_bishop"], (7, 6): pieces["black_knight"], (7, 7): pieces["black_rook"]}
 
 # places the pieces on the board given the index
 for key_coord in piece_loc:
@@ -64,14 +62,17 @@ for key_coord in piece_loc:
     except AttributeError:
         board[x_c][y_c] = piece_loc.get(key_coord)
 
-
 '''prints the board function'''
+
+
 def print_board():
     for i in range(8):
         print(board[i])
 
 
 '''move(selected_index). Takes in selected index and runs the move algorithm in pieces for the piece'''
+
+
 def move(selected_index):
     raise NameError("Unimplemented")
 
@@ -85,13 +86,13 @@ class Tile:
 
     def draw(self, win):
         x, y = self.index
-        scale = WIDTH/DIMENSIONS
+        scale = WIDTH / DIMENSIONS
         pygame.draw.rect(win, self.color, (x * scale, y * scale, scale, scale))
 
     def get_center(self):
         x, y = self.index
         scale = WIDTH / DIMENSIONS
-        return x * scale + (scale/2), y * scale + (scale/2)
+        return x * scale + (scale / 2), y * scale + (scale / 2)
 
     # def is_int(self, piece):
     # if piece.
@@ -106,6 +107,7 @@ def tile_generator(win):
     tile_count = 0
     last_color_white = True
     for i in range(DIMENSIONS):
+        row = []
         last_color_white = not last_color_white
         for j in range(DIMENSIONS):
             temp_color = DARK_BLUE
@@ -126,12 +128,15 @@ def tile_generator(win):
             text_rect = text.get_rect(center=(i * SQUARE + SQUARE - 15, j * SQUARE + SQUARE - 10))
             window.blit(text, text_rect)
 
-            temp_tile.current_piece = piece_loc.get((i,j))
-
+            temp_tile.current_piece = piece_loc.get((i, j))
+            row.append(temp_tile)
+        all_tiles.append(row)
     return all_tiles
 
 
 ''' Depreciated '''
+
+
 def draw_grid(win, rows, width):
     gap = width // 8
     for i in range(rows):
@@ -141,6 +146,8 @@ def draw_grid(win, rows, width):
 
 
 ''' Places pieces and their images on starting tiles. '''
+
+
 def place_pieces(win, all_tiles):
     for key in piece_loc:
         x_co, y_co = key
@@ -152,11 +159,31 @@ def place_pieces(win, all_tiles):
             pass
 
 
+def get_tile(mouse_pos):
+    x, y = mouse_pos
+    file = x // SQUARE
+    rank = y // SQUARE
+    return file, rank
+
+
+'''updates board, piece_loc, all_tles, reloads the whole board and moves pieces'''
+def update_it_all(start_rank, start_file, end_rank, end_file):
+    piece_loc[(end_rank, end_file)] = piece_loc[start_rank, start_file]
+    piece_loc[start_rank, start_file] = ' '
+    board[end_rank][end_file] = board[start_rank][start_file]
+    board[start_rank][start_file] = ' '
+    all_tiles = tile_generator(window)
+    place_pieces(window, all_tiles)
+    print_board()
+    pygame.display.update()
+
+
 def main():
     pygame.init()
     print_board()
     all_tiles = tile_generator(window)
     place_pieces(window, all_tiles)
+
     selected_tile = ()  # Tracks last click of user
     last_two_tile = []
     pygame.display.update()
@@ -169,10 +196,9 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == MOUSEBUTTONDOWN:      # Two clicks to move, not drag and drop.
+            elif event.type == MOUSEBUTTONDOWN:  # Two clicks to move, not drag and drop.
                 mouse_coords = pygame.mouse.get_pos()
-                file = mouse_coords[0] // SQUARE
-                rank = mouse_coords[1] // SQUARE
+                file, rank = get_tile(mouse_coords)
                 if selected_tile == (file, rank):  # Double click square is undo
                     selected_tile = ()
                     last_two_tile = []
@@ -182,52 +208,18 @@ def main():
                 if len(last_two_tile) == 2:
                     start_rank = last_two_tile[0][0]
                     start_file = last_two_tile[0][1]
-
-                    print("--------------------------------")
-                    try:
-                        print("Chose: " + piece_loc.get((start_rank,start_file)).name)
-                    except AttributeError:
-                        print("Chose: ")
-
                     end_rank = last_two_tile[1][0]
                     end_file = last_two_tile[1][1]
 
                     try:
-                        print("Chose: " + piece_loc.get((end_rank, end_file)).name)
-                    except AttributeError:
-                        print("Chose: ")
-
-                    print("                ----------------")
-                    print("Start: " + str(start_file) + "," + str(start_rank))
-                    print("End: " + str(end_file) + "," + str(end_rank))
-                    print("                ----------------")
-
-                    '''The code finds the right pieces now, but still cannot move them. Check console for updates
-                    when clicking pieces'''
-                    '''Blit does not remove the old image and the only way to delete an image is to update
-                    the whole scene. Movement still needs work. Also updates piece_loc and board need to be done
-                    as well'''
-                    # debug
-                    try:
-                        chosen_piece = piece_loc.get((start_rank,start_file))
-                        new = window.blit(chosen_piece.active_image, (end_rank * SQUARE, end_file * SQUARE))
-                        #chosen_piece.active_image.get_rect().x = end_rank * SQUARE + 20
-                        #chosen_piece.active_image.get_rect().y = end_file * SQUARE + 20
+                        chosen_piece = piece_loc.get((start_rank, start_file))
+                        pygame.Rect.move(chosen_piece.active_image.get_rect(),
+                                         end_rank * SQUARE + 20, end_file * SQUARE + 20)
                         pygame.display.update()
-                        print("updated")
-                        print("--------------------------------")
                     except AttributeError:
                         print("you did not choose a piece")
 
-
-                    '''
-                    piece_loc.get(start_file,start_rank).active_image = pygame.image.load(piece_loc[key].image)
-                    piece_loc[key].active_image.convert()
-                    win.blit(piece_loc[key].active_image,
-                        pygame.Rect(x_co * SQUARE + 20, y_co * SQUARE + 20, SQUARE, SQUARE))'''
-
-
-                    place_pieces(window, all_tiles)
+                    update_it_all(start_rank, start_file, end_rank, end_file)
 
                     last_two_tile = []
                     selected_tile = ()
@@ -237,9 +229,7 @@ def main():
 
             else:
                 pass
-        pygame.display.update()
 
 
 if __name__ == "__main__":
     main()
-
