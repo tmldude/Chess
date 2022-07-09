@@ -311,7 +311,7 @@ def main():
                     else:
                         pass
 
-                    print("White to move? " + WHITES_MOVE)
+                    print("White to move? " + str(WHITES_MOVE))
 
                 else:
                     pass
