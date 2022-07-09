@@ -2,7 +2,7 @@ import pygame
 import time
 import sys
 
-from pygame import MOUSEBUTTONDOWN, MOUSEBUTTONUP
+from pygame import MOUSEBUTTONDOWN
 
 from Piece import Pieces
 
@@ -20,6 +20,9 @@ BLUE = (50, 255, 255)
 BLACK = (0, 0, 0)
 LIGHT_BLUE = (195, 216, 228)  # Made these in case pure white and black interfere with the
 DARK_BLUE = (78, 109, 128)  # colors of the pieces
+
+global WHITES_MOVE
+WHITES_MOVE = True
 
 board = [['  ' for i in range(8)] for i in range(8)]
 
@@ -166,6 +169,78 @@ def get_tile(mouse_pos):
     return file, rank
 
 
+''' Returns an array of every legal move for a player's turn '''
+
+
+def get_legal_moves(tile):
+    moves = []
+    for r in range(DIMENSIONS):
+        for c in range(DIMENSIONS):
+            piece_color = piece_loc[(r, c)][0]  # For first letter of color.
+            if piece_color == 'w' and WHITES_MOVE:
+                if piece_loc[(r, c)[6] == 'p']:
+                    moves.append(get_pawn_moves(r, c))
+                elif piece_loc[(r, c)[6] == 'b']:
+                    moves.append(get_bishop_moves(r, c))
+                elif piece_loc[(r, c)[6] == 'r']:
+                    moves.append(get_rook_moves(r, c))
+                elif piece_loc[(r, c)[6] == 'q']:
+                    moves.append(get_queen_moves(r, c))
+                elif piece_loc[(r, c)[6] == 'k']:
+                    if piece_loc[(r, c)[7] == 'n']:
+                        moves.append(get_knight_moves(r, c))
+                    else:
+                        moves.append(get_king_moves(r, c))
+                else:
+                    pass
+            elif piece_color == 'b' and not WHITES_MOVE:
+                if piece_loc[(r, c)[6] == 'p']:
+                    moves.append(get_pawn_moves(r, c))
+                elif piece_loc[(r, c)[6] == 'b']:
+                    moves.append(get_bishop_moves(r, c))
+                elif piece_loc[(r, c)[6] == 'r']:
+                    moves.append(get_rook_moves(r, c))
+                elif piece_loc[(r, c)[6] == 'q']:
+                    moves.append(get_queen_moves(r, c))
+                elif piece_loc[(r, c)[6] == 'k']:
+                    if piece_loc[(r, c)[7] == 'n']:
+                        moves.append(get_knight_moves(r, c))
+                    else:
+                        moves.append(get_king_moves(r, c))
+                else:
+                    pass
+            else:
+                pass
+
+
+''' Skeleton functions for piece move logic. I imagine we move this to a separate file after it's done to 
+ save space. '''
+
+
+def get_pawn_moves(row, col):
+    pass
+
+
+def get_knight_moves(row, col):
+    pass
+
+
+def get_bishop_moves(row, col):
+    pass
+
+
+def get_rook_moves(row, col):
+    pass
+
+
+def get_queen_moves(row, col):
+    pass
+
+
+def get_king_moves(row, col):
+    pass
+
+
 '''updates board, piece_loc, all_tles, reloads the whole board and moves pieces'''
 def update_it_all(start_rank, start_file, end_rank, end_file):
     piece_loc[(end_rank, end_file)] = piece_loc[start_rank, start_file]
@@ -226,6 +301,17 @@ def main():
 
                     last_two_tile = []
                     selected_tile = ()
+
+                    if len(move_log) == 1:
+                        WHITES_MOVE = False
+                    elif len(move_log) % 2 == 0:
+                        WHITES_MOVE = True
+                    elif len(move_log) % 2 == 1:
+                        WHITES_MOVE = False
+                    else:
+                        pass
+
+                    print("White to move? " + WHITES_MOVE)
 
                 else:
                     pass
