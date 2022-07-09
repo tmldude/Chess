@@ -244,9 +244,12 @@ def main():
             elif event.type == MOUSEBUTTONDOWN:  # Two clicks to move, not drag and drop.
                 mouse_coords = pygame.mouse.get_pos()
                 file, rank = get_tile(mouse_coords)
+                # pos_moves = get_possible_moves((rank, file)) #where these functions would go
+                # highlight_potential_moves(window, pos_moves)
                 if selected_tile == (file, rank):  # Double click square is undo
                     selected_tile = ()
                     last_two_tile = []
+                    # un_highlight_potential_moves(win)
                 else:
                     selected_tile = (file, rank)  # Reversed because horizontal view
                     last_two_tile.append(selected_tile)
@@ -256,6 +259,7 @@ def main():
                     end_rank = last_two_tile[1][0]
                     end_file = last_two_tile[1][1]
 
+                    # if (end_rank, end_file) in pos_moves:
                     try:
                         chosen_piece = piece_loc.get((start_rank, start_file))
                         pygame.Rect.move(chosen_piece.active_image.get_rect(),
