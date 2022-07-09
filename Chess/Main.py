@@ -1,17 +1,15 @@
 import pygame
-import time
 import sys
 
+# import time
 from pygame import MOUSEBUTTONDOWN
 
 from Piece import Pieces
+import Piece as Pi
 
 WIDTH = HEIGHT = 800
 DIMENSIONS = 8
 SQUARE = WIDTH // DIMENSIONS
-
-window = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Chess")
 
 WHITE = (255, 255, 255)
 GREY = (128, 128, 128)
@@ -21,22 +19,19 @@ BLACK = (0, 0, 0)
 LIGHT_BLUE = (195, 216, 228)  # Made these in case pure white and black interfere with the
 DARK_BLUE = (78, 109, 128)  # colors of the pieces
 
-global WHITES_MOVE
-WHITES_MOVE = True
+window = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Chess")
 
-board = [['  ' for i in range(8)] for i in range(8)]
+board = [['  ' for i in range(8)] for j in range(8)]
 
 pieces = {}  # Dictionary to assign piece names to their piece objects
 ''' To access piece images call from dictionary pieces. Ex: pieces['white_king'] '''
 
 piece_names = ['white_king', 'white_queen', 'white_rook', 'white_bishop', 'white_knight', 'white_pawn',
                'black_king', 'black_queen', 'black_rook', 'black_bishop', 'black_knight', 'black_pawn']
-for p in piece_names:
-    new_piece = Pieces()
-    new_piece.name = p
-    new_piece.color = p[0]
-    new_piece.image = "piece_images/" + p + ".png"
 
+for p in piece_names:
+    new_piece = Pieces(p, p[0], "piece_images/" + p + ".png")
     pieces[p] = new_piece
 
 # assigned indexes to pieces using the pieces dictionary
@@ -65,20 +60,59 @@ for key_coord in piece_loc:
     except AttributeError:
         board[x_c][y_c] = piece_loc.get(key_coord)
 
-'''prints the board function'''
-
-
+# prints the board function
 def print_board():
     for i in range(8):
         print(board[i])
 
 
-'''move(selected_index). Takes in selected index and runs the move algorithm in pieces for the piece'''
+# move(selected_index). Takes in selected index and runs the move algorithm in pieces for the piece
+# does not give legal moves, outputs every possible move the selected pieces can make in a given position
+# works for either color piece because it does not check for legality
+# black and white pawns are the exception because they move unidirectional
+# needs to be passed through validate_moves() to get rid of the illegal moves
+def get_possible_moves(selected_index: (int, int)) -> list[(int, int)]:
+    r, c = selected_index
+    selected_piece = piece_loc[r, c]
+    piece_name = selected_piece.name
+    if piece_name == 'white_pawn':
+        moves = Pi.pawn_move_white(selected_index)
+    elif piece_name == 'black_pawn':
+        moves = Pi.pawn_move_black(selected_index)
+    elif piece_name == 'white_rook' or piece_name == 'black_rook':
+        moves = Pi.rook_move(selected_index)
+    elif piece_name == 'white_bishop' or piece_name == 'black_bishop':
+        moves = Pi.bishop_move(selected_index)
+    elif piece_name == 'white_knight' or piece_name == 'black_knight':
+        moves = Pi.knight_move(selected_index)
+    elif piece_name == 'white_queen' or piece_name == 'black_queen':
+        moves = Pi.queen_move(selected_index)
+    else:
+        moves = Pi.king_move(selected_index)
+    return moves
 
-
-def move(selected_index):
+# is_valid(pos_moves, index):
+# pos_moves: list[(int,int)] output from the get_possible_moves(function)
+# index: (int, int) the chosen tile to test
+# white_move: bool whose move is it? True = white, False = black
+# This function eliminates moves that intersect with other pieces of the same color and the
+# squares after that intersection. Additionally, it stops at the first piece of the opposing color and
+# eliminates the moves beyond that points
+# This function may handle checks? Note sure yet
+def validate_moves(pos_moves: list[(int, int)], index: (int, int), white_move: bool) -> list[(int, int)]:
     raise NameError("Unimplemented")
 
+
+'''Above is piece movement and placement 
+-
+-
+-
+-
+-
+-
+-
+-
+From here down is building the project, running main, tile generation etc'''
 
 class Tile:
     def __int__(self, index: (int, int), chess_id, color, current_piece=' '):
@@ -97,38 +131,31 @@ class Tile:
         scale = WIDTH / DIMENSIONS
         return x * scale + (scale / 2), y * scale + (scale / 2)
 
-    # def is_int(self, piece):
-    # if piece.
 
-
-'''Generates all tiles and defines the colors/specifications uses the draw function in tile'''
-
-
+# Generates all tiles and defines the colors/specifications uses the draw function in tile'''
 def tile_generator(win):
     font = pygame.font.Font(None, 25)
     all_tiles = []
-    tile_count = 0
-    last_color_white = True
     for i in range(DIMENSIONS):
         row = []
-        last_color_white = not last_color_white
         for j in range(DIMENSIONS):
-            temp_color = DARK_BLUE
+            chosen_tile_color = DARK_BLUE
             opposite_color = WHITE
-            if not last_color_white:
-                temp_color = WHITE
+            if (i + j) % 2 == 0:
+                chosen_tile_color = WHITE
                 opposite_color = BLACK
-            last_color_white = not last_color_white
 
+            # generates tiles given color choices above
             temp_tile = Tile()
             temp_tile.index = (i, j)
             temp_tile.chess_id = str(chr(j + 65)) + str(i + 1)
-            temp_tile.color = temp_color
+            temp_tile.color = chosen_tile_color
             all_tiles.append(temp_tile)
             temp_tile.draw(win)
 
+            # generates tile chess coordinate text
             text = font.render(temp_tile.chess_id, True, opposite_color)
-            text_rect = text.get_rect(center=(i * SQUARE + SQUARE - 15, j * SQUARE + SQUARE - 10))
+            text_rect = text.get_rect(center=(i * SQUARE + SQUARE - (SQUARE / 7), j * SQUARE + SQUARE - (SQUARE / 10)))
             window.blit(text, text_rect)
 
             temp_tile.current_piece = piece_loc.get((i, j))
@@ -136,10 +163,16 @@ def tile_generator(win):
         all_tiles.append(row)
     return all_tiles
 
+# changes the colors of the tiles where the potential moves are located to LIGHT_BLUE
+def highlight_potential_moves(win, potential_moves: list[(int, int)]):
+    raise NameError("Unimplemented")
 
-''' Depreciated '''
+# reverts the colors of the tiles where potential moves are located to their original colors
+def un_highlight_potential_moves(win):
+    raise NameError("Unimplemented")
 
 
+# Depreciated
 def draw_grid(win, rows, width):
     gap = width // 8
     for i in range(rows):
@@ -148,116 +181,50 @@ def draw_grid(win, rows, width):
             pygame.draw.line(win, WHITE, (j * gap, 0), (j * gap, width))
 
 
-''' Places pieces and their images on starting tiles. '''
-
-
-def place_pieces(win, all_tiles):
+# Places pieces and their images on starting tiles.
+def place_pieces(win):
     for key in piece_loc:
         x_co, y_co = key
         try:
             piece_loc[key].active_image = pygame.image.load(piece_loc[key].image)
             piece_loc[key].active_image.convert()
-            win.blit(piece_loc[key].active_image, pygame.Rect(x_co * SQUARE + 20, y_co * SQUARE + 20, SQUARE, SQUARE))
+            win.blit(piece_loc[key].active_image, pygame.Rect(x_co * SQUARE + SQUARE / 5,
+                                                              y_co * SQUARE + SQUARE / 5, SQUARE, SQUARE))
         except AttributeError:
             pass
 
-
+# Takes in mouse position and outputs the rank and file of the tile to be used for identification
 def get_tile(mouse_pos):
     x, y = mouse_pos
-    file = x // SQUARE
-    rank = y // SQUARE
-    return file, rank
+    rank = x // SQUARE
+    file = y // SQUARE
+    return rank, file
 
-
-''' Returns an array of every legal move for a player's turn '''
-
-
-def get_legal_moves(tile):
-    moves = []
-    for r in range(DIMENSIONS):
-        for c in range(DIMENSIONS):
-            piece_color = piece_loc[(r, c)][0]  # For first letter of color.
-            if piece_color == 'w' and WHITES_MOVE:
-                if piece_loc[(r, c)[6] == 'p']:
-                    moves.append(get_pawn_moves(r, c))
-                elif piece_loc[(r, c)[6] == 'b']:
-                    moves.append(get_bishop_moves(r, c))
-                elif piece_loc[(r, c)[6] == 'r']:
-                    moves.append(get_rook_moves(r, c))
-                elif piece_loc[(r, c)[6] == 'q']:
-                    moves.append(get_queen_moves(r, c))
-                elif piece_loc[(r, c)[6] == 'k']:
-                    if piece_loc[(r, c)[7] == 'n']:
-                        moves.append(get_knight_moves(r, c))
-                    else:
-                        moves.append(get_king_moves(r, c))
-                else:
-                    pass
-            elif piece_color == 'b' and not WHITES_MOVE:
-                if piece_loc[(r, c)[6] == 'p']:
-                    moves.append(get_pawn_moves(r, c))
-                elif piece_loc[(r, c)[6] == 'b']:
-                    moves.append(get_bishop_moves(r, c))
-                elif piece_loc[(r, c)[6] == 'r']:
-                    moves.append(get_rook_moves(r, c))
-                elif piece_loc[(r, c)[6] == 'q']:
-                    moves.append(get_queen_moves(r, c))
-                elif piece_loc[(r, c)[6] == 'k']:
-                    if piece_loc[(r, c)[7] == 'n']:
-                        moves.append(get_knight_moves(r, c))
-                    else:
-                        moves.append(get_king_moves(r, c))
-                else:
-                    pass
-            else:
-                pass
-
-
-''' Skeleton functions for piece move logic. I imagine we move this to a separate file after it's done to 
- save space. '''
-
-
-def get_pawn_moves(row, col):
-    pass
-
-
-def get_knight_moves(row, col):
-    pass
-
-
-def get_bishop_moves(row, col):
-    pass
-
-
-def get_rook_moves(row, col):
-    pass
-
-
-def get_queen_moves(row, col):
-    pass
-
-
-def get_king_moves(row, col):
-    pass
-
-
-'''updates board, piece_loc, all_tles, reloads the whole board and moves pieces'''
+# updates board, piece_loc, all_tiles, reloads the whole board and moves pieces
 def update_it_all(start_rank, start_file, end_rank, end_file):
     piece_loc[(end_rank, end_file)] = piece_loc[start_rank, start_file]
     piece_loc[start_rank, start_file] = ' '
     board[end_rank][end_file] = board[start_rank][start_file]
     board[start_rank][start_file] = ' '
-    all_tiles = tile_generator(window)
-    place_pieces(window, all_tiles)
+    tile_generator(window)
+    place_pieces(window)
     print_board()
     pygame.display.update()
 
+# takes in the move history generated in the main function and writes to a file in the project folder
+# the games move history
+# The game played:
+# 1 d4 | d5
+# 2 knf3 | bd3
+# etc
+def return_pgn_file(move_history: list[(int, int)]):
+    raise NameError("Unimplemented")
 
 def main():
     pygame.init()
     print_board()
-    all_tiles = tile_generator(window)
-    place_pieces(window, all_tiles)
+    tile_generator(window)
+    place_pieces(window)
 
     selected_tile = ()  # Tracks last click of user
     last_two_tile = []  # Tracks last two clicks of user
@@ -265,6 +232,7 @@ def main():
 
     pygame.display.update()
 
+    white_move = True
     while True:
         pygame.time.delay(50)
 
@@ -291,7 +259,7 @@ def main():
                     try:
                         chosen_piece = piece_loc.get((start_rank, start_file))
                         pygame.Rect.move(chosen_piece.active_image.get_rect(),
-                                         end_rank * SQUARE + 20, end_file * SQUARE + 20)
+                                         end_rank * SQUARE + SQUARE / 5, end_file * SQUARE + SQUARE / 5)
                         pygame.display.update()
                         move_log.append(last_two_tile)
                     except AttributeError:
@@ -303,15 +271,15 @@ def main():
                     selected_tile = ()
 
                     if len(move_log) == 1:
-                        WHITES_MOVE = False
+                        white_move = False
                     elif len(move_log) % 2 == 0:
-                        WHITES_MOVE = True
+                        white_move = True
                     elif len(move_log) % 2 == 1:
-                        WHITES_MOVE = False
+                        white_move = False
                     else:
                         pass
 
-                    print("White to move? " + str(WHITES_MOVE))
+                    print("White to move? " + str(white_move))
 
                 else:
                     pass
