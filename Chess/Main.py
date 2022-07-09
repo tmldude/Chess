@@ -185,7 +185,9 @@ def main():
     place_pieces(window, all_tiles)
 
     selected_tile = ()  # Tracks last click of user
-    last_two_tile = []
+    last_two_tile = []  # Tracks last two clicks of user
+    move_log = []       # Tuple that stores previously executed moves
+
     pygame.display.update()
 
     while True:
@@ -216,6 +218,7 @@ def main():
                         pygame.Rect.move(chosen_piece.active_image.get_rect(),
                                          end_rank * SQUARE + 20, end_file * SQUARE + 20)
                         pygame.display.update()
+                        move_log.append(last_two_tile)
                     except AttributeError:
                         print("you did not choose a piece")
 
@@ -226,7 +229,17 @@ def main():
 
                 else:
                     pass
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_z:           # Z for undo (Like ctrl + z)
+                    if len(move_log) != 0:            # No moves have been made
+                        update_it_all(end_rank, end_file, start_rank, start_file)
 
+                        # ^^ This function makes life easy, thanks for that. Only issue is captured piece not being
+                        # returned to original square.
+                    else:
+                        pass
+                else:
+                    pass
             else:
                 pass
 
