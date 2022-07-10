@@ -60,6 +60,7 @@ for key_coord in piece_loc:
     except AttributeError:
         board[x_c][y_c] = piece_loc.get(key_coord)
 
+
 # prints the board function
 def print_board():
     for i in range(8):
@@ -91,6 +92,7 @@ def get_possible_moves(selected_index: (int, int)) -> list[(int, int)]:
         moves = Pi.king_move(selected_index)
     return moves
 
+
 # is_valid(pos_moves, index):
 # pos_moves: list[(int,int)] output from the get_possible_moves(function)
 # index: (int, int) the chosen tile to test
@@ -114,6 +116,7 @@ def validate_moves(pos_moves: list[(int, int)], index: (int, int), white_move: b
 -
 From here down is building the project, running main, tile generation etc'''
 
+
 class Tile:
     def __int__(self, index: (int, int), chess_id, color, current_piece=' '):
         self.index = index
@@ -133,7 +136,9 @@ class Tile:
 
 
 # Generates all tiles and defines the colors/specifications uses the draw function in tile'''
-def tile_generator(win, pos_moves=[]):
+def tile_generator(win, pos_moves=None):
+    if pos_moves is None:
+        pos_moves = []
     font = pygame.font.Font(None, 25)
     all_tiles = []
     for i in range(DIMENSIONS):
@@ -168,12 +173,14 @@ def tile_generator(win, pos_moves=[]):
         all_tiles.append(row)
     return all_tiles
 
+
 # changes the colors of the tiles where the potential moves are located to LIGHT_BLUE
 def highlight_potential_moves(win, potential_moves: list[(int, int)]):
     # YELLOW, LIGHT_BLUE
     tile_generator(win, potential_moves)
     place_pieces(window)
     pygame.display.update()
+
 
 # reverts the colors of the tiles where potential moves are located to their original colors
 def un_highlight_potential_moves(win):
@@ -203,12 +210,14 @@ def place_pieces(win):
         except AttributeError:
             pass
 
+
 # Takes in mouse position and outputs the rank and file of the tile to be used for identification
 def get_tile(mouse_pos):
     x, y = mouse_pos
     rank = x // SQUARE
     file = y // SQUARE
     return rank, file
+
 
 # updates board, piece_loc, all_tiles, reloads the whole board and moves pieces
 def update_it_all(start_rank, start_file, end_rank, end_file):
@@ -221,6 +230,7 @@ def update_it_all(start_rank, start_file, end_rank, end_file):
     print_board()
     pygame.display.update()
 
+
 # takes in the move history generated in the main function and writes to a file in the project folder
 # the games move history
 # The game played:
@@ -230,61 +240,68 @@ def update_it_all(start_rank, start_file, end_rank, end_file):
 def return_pgn_file(move_history: list[(int, int)]):
     raise NameError("Unimplemented")
 
+
 def main():
     pygame.init()
     print_board()
     tile_generator(window)
     place_pieces(window)
 
+    pos_moves = []
     selected_tile = ()  # Tracks last click of user
     last_two_tile = []  # Tracks last two clicks of user
-    move_log = []       # Tuple that stores previously executed moves
+    move_log = []  # Tuple that stores previously executed moves
 
     pygame.display.update()
 
     white_move = True
     while True:
         pygame.time.delay(50)
-
-        # causes exit not to break
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == MOUSEBUTTONDOWN:  # Two clicks to move, not drag and drop.
                 mouse_coords = pygame.mouse.get_pos()
-                chosen_coords = rank, file = get_tile(mouse_coords)
-                last_two_tile.append(chosen_coords)
-                try:
-                    if len(last_two_tile) == 0:
-                        last_two_tile.append(chosen_coords)
-                        pos_moves = get_possible_moves((rank, file))
+                selected_tile = get_tile(mouse_coords)
+
+                # if the length of last_two_tiles is 1 and the selected tile is in it
+                # this if statement reverts the board back
+                if selected_tile in last_two_tile and len(last_two_tile) == 1:  # Double click square is undo
+                    last_two_tile.clear()  # clears last 2 tuple
+                    pos_moves = []  # clears possible moves
+                    un_highlight_potential_moves(window)  # un highlights
+
+                # if there are no tiles in last_two_tile, appends the current tile to last_two_tiles
+                # also gets the possible moves, validates them, and highlights them on the board
+                elif len(last_two_tile) == 0:
+                    # catches an attribute error if the selected tile has no piece
+                    try:
+                        pos_moves = get_possible_moves(selected_tile)
                         # validates_pos_moves = validate_moves(pos_moves, (start_rank, start_file), white_move)
                         highlight_potential_moves(window, pos_moves)
-                    elif len(last_two_tile) == 1 and chosen_coords in last_two_tile:  # Double click square is undo
-                        last_two_tile = []
-                        un_highlight_potential_moves(window)
-                    else: # len(last_two_tile) == 2:
-                        start_rank = last_two_tile[0][0]
-                        start_file = last_two_tile[0][1]
-                        end_rank = last_two_tile[1][0]
-                        end_file = last_two_tile[1][1]
+                        last_two_tile.append(selected_tile)
+                    except AttributeError:
+                        print("No piece selected")
 
-                        # if (end_rank, end_file) in pos_moves:
-                        chosen_piece = piece_loc.get((start_rank, start_file))
-
-                        if (end_rank, end_file) in pos_moves:
-                            pygame.Rect.move(chosen_piece.active_image.get_rect(),
-                                             end_rank * SQUARE + SQUARE / 5, end_file * SQUARE + SQUARE / 5)
-                            move_log.append(last_two_tile)
-                            update_it_all(start_rank, start_file, end_rank, end_file)
-                        else:
-                            # un_highlight_potential_moves(window, pos_moves)
-                            print("impossible move")
-                except AttributeError:
-                    print("you did not choose a piece")
-
-                last_two_tile = []
+                # once there are two tiles in last_two_tile, the board works to move the piece
+                else:
+                    last_two_tile.append(selected_tile)
+                    start_rank = last_two_tile[0][0]
+                    start_file = last_two_tile[0][1]
+                    end_rank = last_two_tile[1][0]
+                    end_file = last_two_tile[1][1]
+                    last_two_tile.clear()
+                    chosen_piece = piece_loc.get((start_rank, start_file))
+                    if (end_rank, end_file) in pos_moves:
+                        pygame.Rect.move(chosen_piece.active_image.get_rect(),
+                                         end_rank * SQUARE + SQUARE / 5, end_file * SQUARE + SQUARE / 5)
+                        move_log.append(last_two_tile)
+                        last_two_tile.clear()
+                        update_it_all(start_rank, start_file, end_rank, end_file)
+                    else:
+                        un_highlight_potential_moves(window) #un highlights if selected no tile
+                        print("impossible move")
 
 
                 if len(move_log) == 1:
@@ -296,11 +313,11 @@ def main():
                 else:
                     pass
 
-                print("White to move? " + str(white_move))
+                # print("White to move? " + str(white_move))
 
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_z:           # Z for undo (Like ctrl + z)
-                    if len(move_log) != 0:            # No moves have been made
+                if event.key == pygame.K_z:  # Z for undo (Like ctrl + z)
+                    if len(move_log) != 0:  # No moves have been made
                         update_it_all(end_rank, end_file, start_rank, start_file)
 
                         # ^^ This function makes life easy, thanks for that. Only issue is captured piece not being
