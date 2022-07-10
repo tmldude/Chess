@@ -29,6 +29,8 @@ should be ran to remove all illegal moves that may jump over pieces of go past t
 def pawn_move_white(index: (int, int)) -> list[(int, int)]:
     pos_moves = []
     x, y = index
+    if x == 7 or x == 0:
+        return []
     pos_moves.append((x + 1, y))
     if x == 1:
         pos_moves.append((x + 2, y))
@@ -43,24 +45,92 @@ def pawn_move_white(index: (int, int)) -> list[(int, int)]:
 
 # Pawn move function: for black pieces takes in index of selected pawn outputs possible pawn moves
 def pawn_move_black(index: (int, int)) -> list[(int, int)]:
-    raise NameError("Unimplemented")
+    pos_moves = []
+    x, y = index
+    if x == 7 or x == 0:
+        return []
+    pos_moves.append((x - 1, y))
+    if x == 6:
+        pos_moves.append((x - 2, y))
+    if y == 0:
+        pos_moves.append((x - 1, y + 1))
+    elif y == 7:
+        pos_moves.append((x - 1, y - 1))
+    else:
+        pos_moves.append((x - 1, y + 1))
+        pos_moves.append((x - 1, y - 1))
+    return pos_moves
 
 # Knight move function: takes in index of selected knight and outputs possible knight moves
 def knight_move(index: (int, int)) -> list[(int, int)]:
-    raise NameError("Unimplemented")
+    x, y = index
+    moves = []
+    if x + 2 < 8:
+        if y - 1 >= 0:
+            moves.append((x + 2, y - 1))
+        if y + 1 < 8:
+            moves.append((x + 2, y + 1))
+    if x - 2 >= 0:
+        if y - 1 >= 0:
+            moves.append((x - 2, y - 1))
+        if y + 1 < 8:
+            moves.append((x - 2, y + 1))
+    if y + 2 < 8:
+        if x - 1 >= 0:
+            moves.append((x - 1, y + 2))
+        if x + 1 < 8:
+            moves.append((x + 1, y + 2))
+    if y - 2 >= 0:
+        if x - 1 >= 0:
+            moves.append((x - 1, y - 2))
+        if x + 1 < 8:
+            moves.append((x + 1, y - 2))
+
+    return moves
 
 # Bishop move function: takes in index of selected bishop and outputs possible bishop moves
 def bishop_move(index: (int, int)) -> list[(int, int)]:
-    raise NameError("Unimplemented")
+    x, y = index
+    moves = []
+    for i in range(8):
+        if x + i < 8 and y + i < 8:
+            moves.append((x + i, y + i))
+        if x - i >= 0 and y + i < 8:
+            moves.append((x - i, y + i))
+        if x + i < 8 and y - i >= 0:
+            moves.append((x + i, y - i))
+        if x - i >= 0 and y - i >= 0:
+            moves.append((x - i, y - i))
+    return moves
 
 # Rook move function: takes in index of selected rook and outputs possible rook moves
 def rook_move(index: (int, int)) -> list[(int, int)]:
-    raise NameError("Unimplemented")
+    x, y = index
+    moves = []
+    for i in range(8):
+        if (i, y) != index:
+            moves.append((i, y))
+        if (x, i) != index:
+            moves.append((x, i))
+    return moves
 
 # Queen move function: takes in index of selected queen and outputs possible queen moves
 def queen_move(index: (int, int)) -> list[(int, int)]:
-    raise NameError("Unimplemented")
+    moves = rook_move(index)
+    moves += bishop_move(index)
+    return moves
+
 
 # King move function: takes in index of selected king and outputs possible king moves
 def king_move(index: (int, int)) -> list[(int, int)]:
-    raise NameError("Unimplemented")
+    x, y = index
+    moves = [(x + 1, y + 1), (x + 1, y - 1), (x - 1, y + 1), (x - 1, y - 1), (x + 1, y), (x - 1, y), (x, y + 1),
+             (x, y - 1)]
+
+    # print(moves)
+    for move in moves:
+        new_x, new_y = move
+        if new_x > 7 or new_x < 0 or new_y > 7 or new_y < 0:
+            moves.remove(move)
+    # print(moves)
+    return moves

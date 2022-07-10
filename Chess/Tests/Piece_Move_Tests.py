@@ -2,9 +2,9 @@ import unittest
 
 import Piece as Pi
 
-class PawnMoveTest(unittest.TestCase):
+class PieceMoveTests(unittest.TestCase):
     def test_star_pos_pawn_w(self):
-        for i in range(1, 7):
+        for i in range(0, 8):
             for j in range(0, 8):
                 ans = []
                 index = (i, j)
@@ -19,6 +19,8 @@ class PawnMoveTest(unittest.TestCase):
                     ans.append((i + 1, j - 1))
                     ans.append((i + 1, j + 1))
                 ans.append((i + 1, j))
+                if i == 0 or i == 7:
+                    ans = []
                 self.assertEqual(poss_moves.sort(), ans.sort())
 
     def test_star_pos_pawn_b(self):

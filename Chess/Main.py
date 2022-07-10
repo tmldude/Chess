@@ -133,7 +133,7 @@ class Tile:
 
 
 # Generates all tiles and defines the colors/specifications uses the draw function in tile'''
-def tile_generator(win):
+def tile_generator(win, pos_moves=[]):
     font = pygame.font.Font(None, 25)
     all_tiles = []
     for i in range(DIMENSIONS):
@@ -149,12 +149,17 @@ def tile_generator(win):
             temp_tile = Tile()
             temp_tile.index = (i, j)
             temp_tile.chess_id = str(chr(j + 65)) + str(i + 1)
-            temp_tile.color = chosen_tile_color
+            if temp_tile.index in pos_moves:
+                temp_tile.color = LIGHT_BLUE
+                text = font.render(temp_tile.chess_id, True, YELLOW)
+            else:
+                temp_tile.color = chosen_tile_color
+                text = font.render(temp_tile.chess_id, True, opposite_color)
             all_tiles.append(temp_tile)
             temp_tile.draw(win)
 
             # generates tile chess coordinate text
-            text = font.render(temp_tile.chess_id, True, opposite_color)
+            # text = font.render(temp_tile.chess_id, True, opposite_color)
             text_rect = text.get_rect(center=(i * SQUARE + SQUARE - (SQUARE / 7), j * SQUARE + SQUARE - (SQUARE / 10)))
             window.blit(text, text_rect)
 
@@ -165,11 +170,16 @@ def tile_generator(win):
 
 # changes the colors of the tiles where the potential moves are located to LIGHT_BLUE
 def highlight_potential_moves(win, potential_moves: list[(int, int)]):
-    raise NameError("Unimplemented")
+    # YELLOW, LIGHT_BLUE
+    tile_generator(win, potential_moves)
+    place_pieces(window)
+    pygame.display.update()
 
 # reverts the colors of the tiles where potential moves are located to their original colors
 def un_highlight_potential_moves(win):
-    raise NameError("Unimplemented")
+    tile_generator(win)
+    place_pieces(window)
+    pygame.display.update()
 
 
 # Depreciated
@@ -243,50 +253,51 @@ def main():
                 sys.exit()
             elif event.type == MOUSEBUTTONDOWN:  # Two clicks to move, not drag and drop.
                 mouse_coords = pygame.mouse.get_pos()
-                file, rank = get_tile(mouse_coords)
-                # pos_moves = get_possible_moves((rank, file)) #where these functions would go
-                # highlight_potential_moves(window, pos_moves)
-                if selected_tile == (file, rank):  # Double click square is undo
-                    selected_tile = ()
-                    last_two_tile = []
-                    # un_highlight_potential_moves(win)
-                else:
-                    selected_tile = (file, rank)  # Reversed because horizontal view
-                    last_two_tile.append(selected_tile)
-                if len(last_two_tile) == 2:
-                    start_rank = last_two_tile[0][0]
-                    start_file = last_two_tile[0][1]
-                    end_rank = last_two_tile[1][0]
-                    end_file = last_two_tile[1][1]
+                chosen_coords = rank, file = get_tile(mouse_coords)
+                last_two_tile.append(chosen_coords)
+                try:
+                    if len(last_two_tile) == 0:
+                        last_two_tile.append(chosen_coords)
+                        pos_moves = get_possible_moves((rank, file))
+                        # validates_pos_moves = validate_moves(pos_moves, (start_rank, start_file), white_move)
+                        highlight_potential_moves(window, pos_moves)
+                    elif len(last_two_tile) == 1 and chosen_coords in last_two_tile:  # Double click square is undo
+                        last_two_tile = []
+                        un_highlight_potential_moves(window)
+                    else: # len(last_two_tile) == 2:
+                        start_rank = last_two_tile[0][0]
+                        start_file = last_two_tile[0][1]
+                        end_rank = last_two_tile[1][0]
+                        end_file = last_two_tile[1][1]
 
-                    # if (end_rank, end_file) in pos_moves:
-                    try:
+                        # if (end_rank, end_file) in pos_moves:
                         chosen_piece = piece_loc.get((start_rank, start_file))
-                        pygame.Rect.move(chosen_piece.active_image.get_rect(),
-                                         end_rank * SQUARE + SQUARE / 5, end_file * SQUARE + SQUARE / 5)
-                        pygame.display.update()
-                        move_log.append(last_two_tile)
-                    except AttributeError:
-                        print("you did not choose a piece")
 
-                    update_it_all(start_rank, start_file, end_rank, end_file)
+                        if (end_rank, end_file) in pos_moves:
+                            pygame.Rect.move(chosen_piece.active_image.get_rect(),
+                                             end_rank * SQUARE + SQUARE / 5, end_file * SQUARE + SQUARE / 5)
+                            move_log.append(last_two_tile)
+                            update_it_all(start_rank, start_file, end_rank, end_file)
+                        else:
+                            # un_highlight_potential_moves(window, pos_moves)
+                            print("impossible move")
+                except AttributeError:
+                    print("you did not choose a piece")
 
-                    last_two_tile = []
-                    selected_tile = ()
+                last_two_tile = []
 
-                    if len(move_log) == 1:
-                        white_move = False
-                    elif len(move_log) % 2 == 0:
-                        white_move = True
-                    elif len(move_log) % 2 == 1:
-                        white_move = False
-                    else:
-                        pass
 
-                    print("White to move? " + str(white_move))
-
+                if len(move_log) == 1:
+                    white_move = False
+                elif len(move_log) % 2 == 0:
+                    white_move = True
+                elif len(move_log) % 2 == 1:
+                    white_move = False
                 else:
                     pass
+
+                print("White to move? " + str(white_move))
+
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_z:           # Z for undo (Like ctrl + z)
                     if len(move_log) != 0:            # No moves have been made
