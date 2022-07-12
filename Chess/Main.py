@@ -52,6 +52,17 @@ piece_loc = {(0, 0): pieces["white_rook"], (0, 1): pieces["white_knight"],
              (7, 2): pieces["black_bishop"], (7, 3): pieces["black_king"], (7, 4): pieces["black_queen"],
              (7, 5): pieces["black_bishop"], (7, 6): pieces["black_knight"], (7, 7): pieces["black_rook"]}
 
+# for testing
+empty_piece_loc = \
+             {(0, 0): " ", (0, 1): " ", (0, 2): " ", (0, 3): " ", (0, 4): " ", (0, 5): " ", (0, 6): " ", (0, 7): " ",
+             (1, 0): " ", (1, 1): " ", (1, 2): " ", (1, 3): " ", (1, 4): " ", (1, 5): " ", (1, 6): " ", (1, 7): " ",
+             (2, 0): " ", (2, 1): " ", (2, 2): " ", (2, 3): " ", (2, 4): " ", (2, 5): " ", (2, 6): " ", (2, 7): " ",
+             (3, 0): " ", (3, 1): " ", (3, 2): " ", (3, 3): " ", (3, 4): " ", (3, 5): " ", (3, 6): " ", (3, 7): " ",
+             (4, 0): " ", (4, 1): " ", (4, 2): " ", (4, 3): " ", (4, 4): " ", (4, 5): " ", (4, 6): " ", (4, 7): " ",
+             (5, 0): " ", (5, 1): " ", (5, 2): " ", (5, 3): " ", (5, 4): " ", (5, 5): " ", (5, 6): " ", (5, 7): " ",
+             (6, 0): " ", (6, 1): " ", (6, 2): " ", (6, 3): " ", (6, 4): " ", (6, 5):" ", (6, 6): " ", (6, 7): " ",
+             (7, 0): " ", (7, 1): " ", (7, 2): " ", (7, 3): " ", (7, 4): " ", (7, 5): " ", (7, 6): " ", (7, 7): " "}
+
 # places the pieces on the board given the index
 for key_coord in piece_loc:
     x_c, y_c = key_coord
@@ -60,12 +71,10 @@ for key_coord in piece_loc:
     except AttributeError:
         board[x_c][y_c] = piece_loc.get(key_coord)
 
-
 # prints the board function
 def print_board():
     for i in range(8):
         print(board[i])
-
 
 # move(selected_index). Takes in selected index and runs the move algorithm in pieces for the piece
 # does not give legal moves, outputs every possible move the selected pieces can make in a given position
@@ -108,16 +117,79 @@ def validate_moves(pos_moves: list[(int, int)], index: (int, int), white_move: b
         piece_loc_val = test_board
 
     current_piece = piece_loc_val[index]
+    name = current_piece.name
     color = current_piece.color
     validated = []
-    # print(piece_loc_val)
-    for move in pos_moves:
-        if piece_loc_val[move] != ' ' and piece_loc_val[move].color == color:
-            pass
-        else:
-            validated.append(move)
+    x, y = index
 
-    return validated
+    if name == "white_pawn":
+        for move in pos_moves:
+            pos_x, pos_y = move
+            if piece_loc_val[move] != ' ':
+                if pos_y != y:
+                    if piece_loc_val[move].color == 'b':
+                        validated.append(move)
+            else:
+                if pos_y == y:
+                    if x + 2 == pos_x:
+                        if piece_loc_val[(x + 1, y)] == ' ':
+                            validated.append(move)
+                    else:
+                        validated.append(move)
+        return validated
+
+    if name == "black_pawn":
+        for move in pos_moves:
+            pos_x, pos_y = move
+            if piece_loc_val[move] != ' ':
+                if pos_y != y:
+                    if piece_loc_val[move].color == 'w':
+                        validated.append(move)
+            else:
+                if pos_y == y:
+                    if x - 2 == pos_x:
+                        if piece_loc_val[(x - 1, y)] == ' ':
+                            validated.append(move)
+                    else:
+                        validated.append(move)
+        return validated
+
+    if name == "white_knight":
+        for move in pos_moves:
+            if piece_loc_val[move] == ' ':
+                validated.append(move)
+            else:
+                if piece_loc_val[move].color == 'b':
+                    validated.append(move)
+        return validated
+
+    if name == "black_knight":
+        for move in pos_moves:
+            if piece_loc_val[move] == ' ':
+                validated.append(move)
+            else:
+                if piece_loc_val[move].color == 'w':
+                    validated.append(move)
+        return validated
+
+
+    '''
+                    if piece_loc_val[x + 1] and piece_loc_val[x + 1] == ' ':
+                    validated.append(move)
+    pos = True
+    is_x = False
+    x, y = index
+    for i in range(7):
+        for j in range(i):
+            if pos and x:
+                x += 1
+            if 7 >= x >= 0 and 7 >= y >= 0:
+    '''
+    print(validated)
+    if validated:
+        return validated
+
+    return pos_moves
 
 
 '''Above is piece movement and placement 
@@ -293,9 +365,8 @@ def main():
                     # catches an attribute error if the selected tile has no piece
                     try:
                         pos_moves = get_possible_moves(selected_tile)
-                        validates_pos_moves = validate_moves(pos_moves, selected_tile, white_move)
-                        # highlight_potential_moves(window, pos_moves)
-                        highlight_potential_moves(window, validates_pos_moves)
+                        pos_moves = validate_moves(pos_moves, selected_tile, white_move)
+                        highlight_potential_moves(window, pos_moves)
                         last_two_tile.append(selected_tile)
                     except AttributeError:
                         print("No piece selected")
