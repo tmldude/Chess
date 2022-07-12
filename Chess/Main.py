@@ -101,8 +101,12 @@ def get_possible_moves(selected_index: (int, int)) -> list[(int, int)]:
 # squares after that intersection. Additionally, it stops at the first piece of the opposing color and
 # eliminates the moves beyond that points
 # This function may handle checks? Note sure yet
-def validate_moves(pos_moves: list[(int, int)], index: (int, int), white_move: bool) -> list[(int, int)]:
-    raise NameError("Unimplemented")
+def validate_moves(pos_moves: list[(int, int)], index: (int, int), white_move: bool, test_board=None) \
+        -> list[(int, int)]:
+    piece_loc_val = piece_loc
+    if test_board:
+        piece_loc_val = test_board
+    return []
 
 
 '''Above is piece movement and placement 
