@@ -44,7 +44,7 @@ piece_loc = {(0, 0): pieces["white_rook"], (0, 1): pieces["white_knight"],
              (2, 0): " ", (2, 1): " ", (2, 2): " ", (2, 3): " ", (2, 4): " ", (2, 5): " ", (2, 6): " ", (2, 7): " ",
              (3, 0): " ", (3, 1): " ", (3, 2): " ", (3, 3): " ", (3, 4): " ", (3, 5): " ", (3, 6): " ", (3, 7): " ",
              (4, 0): " ", (4, 1): " ", (4, 2): " ", (4, 3): " ", (4, 4): " ", (4, 5): " ", (4, 6): " ", (4, 7): " ",
-             (5, 1): " ", (5, 2): " ", (5, 3): " ", (5, 4): " ", (5, 5): " ", (5, 6): " ", (5, 7): " ",
+             (5, 0): " ", (5, 1): " ", (5, 2): " ", (5, 3): " ", (5, 4): " ", (5, 5): " ", (5, 6): " ", (5, 7): " ",
              (6, 0): pieces["black_pawn"], (6, 1): pieces["black_pawn"], (6, 2): pieces["black_pawn"],
              (6, 3): pieces["black_pawn"],
              (6, 4): pieces["black_pawn"], (6, 5): pieces["black_pawn"], (6, 6): pieces["black_pawn"],
@@ -106,7 +106,18 @@ def validate_moves(pos_moves: list[(int, int)], index: (int, int), white_move: b
     piece_loc_val = piece_loc
     if test_board:
         piece_loc_val = test_board
-    return []
+
+    current_piece = piece_loc_val[index]
+    color = current_piece.color
+    validated = []
+    # print(piece_loc_val)
+    for move in pos_moves:
+        if piece_loc_val[move] != ' ' and piece_loc_val[move].color == color:
+            pass
+        else:
+            validated.append(move)
+
+    return validated
 
 
 '''Above is piece movement and placement 
@@ -282,8 +293,9 @@ def main():
                     # catches an attribute error if the selected tile has no piece
                     try:
                         pos_moves = get_possible_moves(selected_tile)
-                        # validates_pos_moves = validate_moves(pos_moves, (start_rank, start_file), white_move)
-                        highlight_potential_moves(window, pos_moves)
+                        validates_pos_moves = validate_moves(pos_moves, selected_tile, white_move)
+                        # highlight_potential_moves(window, pos_moves)
+                        highlight_potential_moves(window, validates_pos_moves)
                         last_two_tile.append(selected_tile)
                     except AttributeError:
                         print("No piece selected")

@@ -94,13 +94,17 @@ def bishop_move(index: (int, int)) -> list[(int, int)]:
     moves = []
     for i in range(8):
         if x + i < 8 and y + i < 8:
-            moves.append((x + i, y + i))
+            if (x + i, y + i) not in moves and (x + i, y + i) != index:
+                moves.append((x + i, y + i))
         if x - i >= 0 and y + i < 8:
-            moves.append((x - i, y + i))
+            if (x - i, y + i) not in moves and (x - i, y + i) != index:
+                moves.append((x - i, y + i))
         if x + i < 8 and y - i >= 0:
-            moves.append((x + i, y - i))
+            if (x + i, y - i) not in moves and (x + i, y - i) != index:
+                moves.append((x + i, y - i))
         if x - i >= 0 and y - i >= 0:
-            moves.append((x - i, y - i))
+            if (x - i, y - i) not in moves and (x - i, y - i) != index:
+                moves.append((x - i, y - i))
     return moves
 
 # Rook move function: takes in index of selected rook and outputs possible rook moves
@@ -127,10 +131,10 @@ def king_move(index: (int, int)) -> list[(int, int)]:
     moves = [(x + 1, y + 1), (x + 1, y - 1), (x - 1, y + 1), (x - 1, y - 1), (x + 1, y), (x - 1, y), (x, y + 1),
              (x, y - 1)]
 
-    # print(moves)
+    test_moves = []
     for move in moves:
         new_x, new_y = move
-        if new_x > 7 or new_x < 0 or new_y > 7 or new_y < 0:
-            moves.remove(move)
-    # print(moves)
-    return moves
+        if 7 >= new_x >= 0 and 7 >= new_y >= 0:
+            test_moves.append(move)
+
+    return test_moves
