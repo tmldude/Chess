@@ -119,16 +119,16 @@ def get_possible_moves(selected_index: (int, int), white_move) -> list[(int, int
 # squares after that intersection. Additionally, it stops at the first piece of the opposing color and
 # eliminates the moves beyond that points
 # This function may handle checks? Note sure yet
-def check_king_attacked(pos_moves: list[(int, int)], index_king: (int, int), white_move: bool, test_board=None) \
+def check_king_attacked(pos_moves: list[(int, int)], index_king: (int, int), is_white: bool, test_board=None) \
         -> list[(int, int)]:
-
-    knight_possibles = Pi.knight_move(index_king, piece_loc, white_move)
-    rook_possibilities = Pi.rook_move(index_king, piece_loc, white_move)
-    bishop_possibles = Pi.bishop_move(index_king, piece_loc, white_move)
+    knight_possibles = Pi.knight_move(index_king, piece_loc, is_white)
+    rook_possibilities = Pi.rook_move(index_king, piece_loc, is_white)
+    bishop_possibles = Pi.bishop_move(index_king, piece_loc, is_white)
     attackers = []
     for move in knight_possibles:
         if piece_loc[move] != ' ':
-            attackers += move
+            if 'knight' in piece_loc[move].name:
+                attackers += move
     for move in rook_possibilities:
         if piece_loc[move] != ' ':
             if 'rook' in piece_loc[move].name or 'queen' in piece_loc[move].name:
@@ -137,7 +137,13 @@ def check_king_attacked(pos_moves: list[(int, int)], index_king: (int, int), whi
         if piece_loc[move] != ' ':
             if 'bishop' in piece_loc[move].name or 'queen' in piece_loc[move].name:
                 attackers += move
-
+            if 'pawn' in piece_loc[move].name:
+                if is_white:
+                    pawn_pos = Pi.pawn_move_white(move, piece_loc)
+                else:
+                    pawn_pos = Pi.pawn_move_black(move, piece_loc)
+                if move in pawn_pos:
+                    attackers += move
     return attackers
 
 
@@ -338,16 +344,16 @@ def main():
                         last_two_tile.clear()
                         if 'king' in piece_loc[(start_rank, start_file)].name:
                             if piece_loc[(start_rank, start_file)].color == 'w':
-                                king_index[0] = (start_rank, start_file)
+                                king_index[0] = (end_rank, end_file)
                             else:
-                                king_index[1] = (start_rank, start_file)
+                                king_index[1] = (end_rank, end_file)
                         update_it_all(start_rank, start_file, end_rank, end_file)
                     else:
                         un_highlight_potential_moves(window)  # un highlights if selected no tile
                         print("impossible move")
 
-                print(check_king_attacked(pos_moves, king_index[0], white_move))
-                print(check_king_attacked(pos_moves, king_index[1], white_move))
+                print(check_king_attacked(pos_moves, king_index[0], True))
+                print(check_king_attacked(pos_moves, king_index[1], False))
 
                 if len(move_log) == 1:
                     white_move = False
