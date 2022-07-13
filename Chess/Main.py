@@ -36,7 +36,7 @@ for p in piece_names:
 
 # assigned indexes to pieces using the pieces dictionary
 piece_loc = {(0, 0): pieces["white_rook"], (0, 1): pieces["white_knight"],
-             (0, 2): pieces["white_bishop"], (0, 3): pieces["white_king"], (0, 4): pieces["white_queen"],
+             (0, 2): pieces["white_bishop"], (0, 3): pieces["white_queen"], (0, 4): pieces["white_king"],
              (0, 5): pieces["white_bishop"], (0, 6): pieces["white_knight"], (0, 7): pieces["white_rook"],
              (1, 0): pieces["white_pawn"], (1, 1): pieces["white_pawn"], (1, 2): pieces["white_pawn"],
              (1, 3): pieces["white_pawn"], (1, 4): pieces["white_pawn"], (1, 5): pieces["white_pawn"],
@@ -49,7 +49,7 @@ piece_loc = {(0, 0): pieces["white_rook"], (0, 1): pieces["white_knight"],
              (6, 3): pieces["black_pawn"],
              (6, 4): pieces["black_pawn"], (6, 5): pieces["black_pawn"], (6, 6): pieces["black_pawn"],
              (6, 7): pieces["black_pawn"], (7, 0): pieces["black_rook"], (7, 1): pieces["black_knight"],
-             (7, 2): pieces["black_bishop"], (7, 3): pieces["black_king"], (7, 4): pieces["black_queen"],
+             (7, 2): pieces["black_bishop"], (7, 3): pieces["black_queen"], (7, 4): pieces["black_king"],
              (7, 5): pieces["black_bishop"], (7, 6): pieces["black_knight"], (7, 7): pieces["black_rook"]}
 
 # for testing
@@ -119,9 +119,26 @@ def get_possible_moves(selected_index: (int, int), white_move) -> list[(int, int
 # squares after that intersection. Additionally, it stops at the first piece of the opposing color and
 # eliminates the moves beyond that points
 # This function may handle checks? Note sure yet
-def validate_moves(pos_moves: list[(int, int)], index: (int, int), white_move: bool, test_board=None) \
+def check_king_attacked(pos_moves: list[(int, int)], index_king: (int, int), white_move: bool, test_board=None) \
         -> list[(int, int)]:
-    raise NameError("Unimplemented")
+
+    knight_possibles = Pi.knight_move(index_king, piece_loc, white_move)
+    rook_possibilities = Pi.rook_move(index_king, piece_loc, white_move)
+    bishop_possibles = Pi.bishop_move(index_king, piece_loc, white_move)
+    attackers = []
+    for move in knight_possibles:
+        if piece_loc[move] != ' ':
+            attackers += move
+    for move in rook_possibilities:
+        if piece_loc[move] != ' ':
+            if 'rook' in piece_loc[move].name or 'queen' in piece_loc[move].name:
+                attackers += move
+    for move in bishop_possibles:
+        if piece_loc[move] != ' ':
+            if 'bishop' in piece_loc[move].name or 'queen' in piece_loc[move].name:
+                attackers += move
+
+    return attackers
 
 
 '''Above is piece movement and placement 
@@ -159,9 +176,7 @@ def tile_generator(win, pos_moves=None):
     if pos_moves is None:
         pos_moves = []
     font = pygame.font.Font(None, 25)
-    all_tiles = []
     for i in range(DIMENSIONS):
-        row = []
         for j in range(DIMENSIONS):
             chosen_tile_color = DARK_BLUE
             opposite_color = WHITE
@@ -173,24 +188,25 @@ def tile_generator(win, pos_moves=None):
             temp_tile = Tile()
             temp_tile.index = (i, j)
             temp_tile.chess_id = str(chr(j + 65)) + str(i + 1)
+
+            # checks to see if tile needs to be highlighted
             if temp_tile.index in pos_moves:
                 temp_tile.color = LIGHT_BLUE
-                text = font.render(temp_tile.chess_id, True, YELLOW)
+                tile_color = YELLOW
             else:
                 temp_tile.color = chosen_tile_color
-                text = font.render(temp_tile.chess_id, True, opposite_color)
-            all_tiles.append(temp_tile)
+                tile_color = opposite_color
             temp_tile.draw(win)
 
             # generates tile chess coordinate
             # text = font.render(temp_tile.chess_id, True, opposite_color)
-            text_rect = text.get_rect(center=(i * SQUARE + SQUARE - (SQUARE / 7), j * SQUARE + SQUARE - (SQUARE / 10)))
-            window.blit(text, text_rect)
+            if i == 0 or j == 0:
+                text = font.render(temp_tile.chess_id, True, tile_color)
+                text_rect = text.get_rect(
+                    center=(i * SQUARE + SQUARE - (SQUARE / 7), j * SQUARE + SQUARE - (SQUARE / 10)))
+                window.blit(text, text_rect)
 
-            temp_tile.current_piece = piece_loc.get((i, j))
-            row.append(temp_tile)
-        all_tiles.append(row)
-    return all_tiles
+    # draw_grid(window, WIDTH, WIDTH) adds a lot of lag
 
 
 # changes the colors of the tiles where the potential moves are located to LIGHT_BLUE
@@ -208,13 +224,13 @@ def un_highlight_potential_moves(win):
     pygame.display.update()
 
 
-# Depreciated
+# Draws a grid to outline the tiles
 def draw_grid(win, rows, width):
     gap = width // 8
     for i in range(rows):
-        pygame.draw.line(win, WHITE, (0, i * gap), (width, i * gap))
+        pygame.draw.line(win, BLACK, (0, i * gap), (width, i * gap))
         for j in range(rows):
-            pygame.draw.line(win, WHITE, (j * gap, 0), (j * gap, width))
+            pygame.draw.line(win, BLACK, (j * gap, 0), (j * gap, width))
 
 
 # Places pieces and their images on starting tiles.
@@ -267,10 +283,9 @@ def main():
     place_pieces(window)
 
     pos_moves = []
-    selected_tile = ()  # Tracks last click of user
     last_two_tile = []  # Tracks last two clicks of user
     move_log = []  # Tuple that stores previously executed moves
-
+    king_index = [(0, 4), (7, 4)]
     pygame.display.update()
 
     white_move = True
@@ -321,10 +336,18 @@ def main():
                                          end_rank * SQUARE + SQUARE / 5, end_file * SQUARE + SQUARE / 5)
                         move_log.append(last_two_tile)
                         last_two_tile.clear()
+                        if 'king' in piece_loc[(start_rank, start_file)].name:
+                            if piece_loc[(start_rank, start_file)].color == 'w':
+                                king_index[0] = (start_rank, start_file)
+                            else:
+                                king_index[1] = (start_rank, start_file)
                         update_it_all(start_rank, start_file, end_rank, end_file)
                     else:
                         un_highlight_potential_moves(window)  # un highlights if selected no tile
                         print("impossible move")
+
+                print(check_king_attacked(pos_moves, king_index[0], white_move))
+                print(check_king_attacked(pos_moves, king_index[1], white_move))
 
                 if len(move_log) == 1:
                     white_move = False
