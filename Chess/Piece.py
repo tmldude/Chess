@@ -129,7 +129,7 @@ def bishop_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_mo
     found_down_up = False
 
     for i in range(8):
-        if x + i < 8 and y + i < 8 and (not found_up_up):
+        if x + i < 8 and y + i < 8 and not found_up_up:
             move = (x + i, y + i)
             if move not in moves and move != index:
                 if piece_loc[move] == ' ':
@@ -271,17 +271,15 @@ def king_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move
     for move in moves:
         new_x, new_y = move
         if 7 >= new_x >= 0 and 7 >= new_y >= 0:
-            checks_at_move = check_king_attacked(piece_loc, move, white_move)
-            if not checks_at_move:
-                if piece_loc[move] == ' ':
-                    test_moves.append(move)
+            if piece_loc[move] == ' ':
+                test_moves.append(move)
+            else:
+                if white_move:
+                    if piece_loc[move].color == 'b':
+                        test_moves.append(move)
                 else:
-                    if white_move:
-                        if piece_loc[move].color == 'b':
-                            test_moves.append(move)
-                    else:
-                        if piece_loc[move].color == 'w':
-                            test_moves.append(move)
+                    if piece_loc[move].color == 'w':
+                        test_moves.append(move)
     return test_moves
 
 
@@ -291,6 +289,8 @@ def check_king_attacked(piece_loc: dict[(int, int), Pieces], index_king: (int, i
     knight_possibles = knight_move(index_king, piece_loc, is_white)
     rook_possibilities = rook_move(index_king, piece_loc, is_white)
     bishop_possibles = bishop_move(index_king, piece_loc, is_white)
+    king_possibles = king_move(index_king, piece_loc, is_white)
+
     attackers = []
     for move in knight_possibles:
         if piece_loc[move] != ' ':
@@ -311,4 +311,9 @@ def check_king_attacked(piece_loc: dict[(int, int), Pieces], index_king: (int, i
                     pawn_pos = pawn_move_black(move, piece_loc)
                 if index_king in pawn_pos:
                     attackers.append(move)
+    for move in king_possibles:
+        if piece_loc[move] != ' ':
+            if 'king' in piece_loc[move].name:
+                attackers.append(move)
+
     return attackers

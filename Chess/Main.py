@@ -4,7 +4,6 @@ import sys
 # import time
 from pygame import MOUSEBUTTONDOWN
 
-import Piece
 from Piece import Pieces
 import Piece as Pi
 
@@ -17,6 +16,7 @@ GREY = (128, 128, 128)
 YELLOW = (204, 204, 0)
 BLUE = (50, 255, 255)
 BLACK = (0, 0, 0)
+RED = (255, 0, 0)
 LIGHT_BLUE = (195, 216, 228)  # Made these in case pure white and black interfere with the
 DARK_BLUE = (78, 109, 128)  # colors of the pieces
 
@@ -90,7 +90,7 @@ def print_board():
 # works for either color piece because it does not check for legality
 # black and white pawns are the exception because they move unidirectional
 # needs to be passed through validate_moves() to get rid of the illegal moves
-def get_possible_moves(selected_index: (int, int), white_move) -> list[(int, int)]:
+def get_possible_moves(selected_index: (int, int), white_move: bool, king_index: (int, int)) -> list[(int, int)]:
     r, c = selected_index
     selected_piece = piece_loc[r, c]
     piece_name = selected_piece.name
@@ -109,44 +109,20 @@ def get_possible_moves(selected_index: (int, int), white_move) -> list[(int, int
         moves = Pi.queen_move(selected_index, piece_loc, white_move)
     else:
         moves = Pi.king_move(selected_index, piece_loc, white_move)
-    return moves
-
-
-# takes in pos_moves and removes the moves the move into check
-def check_moves_into_check(pos_moves: list[(int, int)], piece_index: (int, int), king_index: (int, int),
-                           is_white: bool) -> list[(int, int)]:
 
     checked = []
-    for move in pos_moves:
+    for move in moves:
         copy = piece_loc.copy()
-        temp = copy[piece_index]
+        temp = copy[selected_index]
         copy[move] = temp
-        copy[piece_index] = ' '
-        checks = Piece.check_king_attacked(copy, king_index, is_white)
+        copy[selected_index] = ' '
+        if 'king' in piece_name:
+            checks = Pi.check_king_attacked(copy, move, white_move)
+        else:
+            checks = Pi.check_king_attacked(copy, king_index, white_move)
         if not checks:
             checked.append(move)
-
     return checked
-
-
-
-
-# takes in a piece and returns the indexes at which it can block checks
-def check_if_can_block(piece_index: (int, int), king_index: (int, int), is_white: bool) -> list[(int, int)]:
-    if piece_index == king_index:
-        return Pi.king_move(king_index, piece_loc, is_white)
-
-    pos_blocks = []
-    pos_moves = get_possible_moves(piece_index, is_white)
-    for move in pos_moves:
-        copy = piece_loc.copy()
-        temp = copy[piece_index]
-        copy[move] = temp
-        copy[piece_index] = ' '
-        checks = Piece.check_king_attacked(copy, king_index, is_white)
-        if not checks:
-            pos_blocks.append(move)
-    return pos_blocks
 
 
 def check_if_mate(king_index: (int, int), is_white: bool) -> bool:
@@ -154,21 +130,16 @@ def check_if_mate(king_index: (int, int), is_white: bool) -> bool:
     if is_white:
         color = 'w'
 
-    pos_blocks = []
-    pos_king_moves = Pi.king_move(king_index, piece_loc, is_white)
-    if pos_king_moves:
-        return False
-
+    pos_moves = []
     for key in piece_loc:
         temp = piece_loc[key]
         if temp != ' ':
             if temp.color == color:
-                pos_blocks += check_if_can_block(key, king_index, is_white)
-                if pos_blocks:
+                moves = get_possible_moves(key, is_white, king_index)
+                pos_moves += moves
+                if pos_moves:
                     return False
-
     return True
-
 
 
 '''Above is piece movement and placement 
@@ -202,7 +173,7 @@ class Tile:
 
 
 # Generates all tiles and defines the colors/specifications uses the draw function in tile'''
-def tile_generator(win, pos_moves=None):
+def tile_generator(win, in_check=(-1, -1), pos_moves=None):
     if pos_moves is None:
         pos_moves = []
     font = pygame.font.Font(None, 25)
@@ -226,6 +197,9 @@ def tile_generator(win, pos_moves=None):
             else:
                 temp_tile.color = chosen_tile_color
                 tile_color = opposite_color
+            if temp_tile.index == in_check:
+                temp_tile.color = RED
+
             temp_tile.draw(win)
 
             # generates tile chess coordinate
@@ -236,20 +210,7 @@ def tile_generator(win, pos_moves=None):
                     center=(i * SQUARE + SQUARE - (SQUARE / 7), j * SQUARE + SQUARE - (SQUARE / 10)))
                 window.blit(text, text_rect)
 
-    # draw_grid(window, WIDTH, WIDTH) adds a lot of lag
-
-
-# changes the colors of the tiles where the potential moves are located to LIGHT_BLUE
-def highlight_potential_moves(win, potential_moves: list[(int, int)]):
-    # YELLOW, LIGHT_BLUE
-    tile_generator(win, potential_moves)
-    place_pieces(window)
-    pygame.display.update()
-
-
-# reverts the colors of the tiles where potential moves are located to their original colors
-def un_highlight_potential_moves(win):
-    tile_generator(win)
+    # draw_grid(window, WIDTH, WIDTH)  # adds a lot of lag
     place_pieces(window)
     pygame.display.update()
 
@@ -284,19 +245,6 @@ def get_tile(mouse_pos):
     return rank, file
 
 
-# updates board, piece_loc, all_tiles, reloads the whole board and moves pieces
-def update_it_all(start_rank, start_file, end_rank, end_file, move_log):
-    piece_loc[(end_rank, end_file)] = piece_loc[start_rank, start_file]
-    piece_loc[start_rank, start_file] = ' '
-    board[end_rank][end_file] = board[start_rank][start_file]
-    board[start_rank][start_file] = ' '
-    tile_generator(window)
-    place_pieces(window)
-    move_log.append([(start_rank, start_file), (end_rank, end_file)])
-    pygame.display.update()
-    return move_log
-
-
 # takes in the move history generated in the main function and writes to a file in the project folder
 # the games move history
 # The game played:
@@ -311,15 +259,14 @@ def main():
     pygame.init()
     print_board()
     tile_generator(window)
-    place_pieces(window)
 
+    in_check = (-1, -1)
     pos_moves = []
     last_two_tile = []  # Tracks last two clicks of user
     move_log = []  # Tuple that stores previously executed moves
     king_index = [(0, 4), (7, 4)]
-    pygame.display.update()
-
     white_move = True
+
     while True:
         pygame.time.delay(50)
         for event in pygame.event.get():
@@ -330,12 +277,12 @@ def main():
                 mouse_coords = pygame.mouse.get_pos()
                 selected_tile = get_tile(mouse_coords)
 
-                # if the length of last_two_tiles is 1 and the selected tile is in it
-                # this if statement reverts the board back
-                if selected_tile in last_two_tile and len(last_two_tile) == 1:  # Double click square is undo
-                    last_two_tile.clear()  # clears last 2 tuple
-                    pos_moves = []  # clears possible moves
-                    un_highlight_potential_moves(window)  # un highlights
+                if check_if_mate(king_index[0], True):
+                    print("Black Wins!")
+                    # return False
+                elif check_if_mate(king_index[1], False):
+                    print("White Wins!")
+                    # return False
 
                 # if there are no tiles in last_two_tile, appends the current tile to last_two_tiles
                 # also gets the possible moves, validates them, and highlights them on the board
@@ -343,27 +290,22 @@ def main():
                     # catches an attribute error if the selected tile has no piece
                     try:
                         if white_move and piece_loc[selected_tile].color == 'w':
-                            if Pi.check_king_attacked(piece_loc, king_index[0], True):
-                                print("white king threats: " + str(
-                                    Pi.check_king_attacked(piece_loc, king_index[0], True)))
-                                pos_moves = check_if_can_block(selected_tile, king_index[0], True)
-                            else:
-                                pos_moves = get_possible_moves(selected_tile, white_move)
-                                pos_moves = check_moves_into_check(pos_moves, selected_tile, king_index[0], True)
-                            highlight_potential_moves(window, pos_moves)
+                            pos_moves = get_possible_moves(selected_tile, white_move, king_index[0])
+                            tile_generator(window, in_check, pos_moves)
                             last_two_tile.append(selected_tile)
                         if not white_move and piece_loc[selected_tile].color == 'b':
-                            if Pi.check_king_attacked(piece_loc, king_index[1], False):
-                                print("black king threats: " + str(
-                                    Pi.check_king_attacked(piece_loc, king_index[1], False)))
-                                pos_moves = check_if_can_block(selected_tile, king_index[1], False)
-                            else:
-                                pos_moves = get_possible_moves(selected_tile, white_move)
-                                pos_moves = check_moves_into_check(pos_moves, selected_tile, king_index[1], False)
-                            highlight_potential_moves(window, pos_moves)
+                            pos_moves = get_possible_moves(selected_tile, white_move, king_index[1])
+                            tile_generator(window, in_check, pos_moves)
                             last_two_tile.append(selected_tile)
                     except AttributeError:
                         print("No piece selected or wrong turn")
+
+                # if the length of last_two_tiles is 1 and the selected tile is in it
+                # this if statement reverts the board back
+                elif selected_tile in last_two_tile and len(last_two_tile) == 1:  # Double click square is undo
+                    last_two_tile.clear()  # clears last 2 tuple
+                    pos_moves = []  # clears possible moves
+                    tile_generator(window, in_check)  # un highlights
 
                 # once there are two tiles in last_two_tile, the board works to move the piece
                 else:
@@ -374,8 +316,7 @@ def main():
                     end_file = last_two_tile[1][1]
                     last_two_tile.clear()
                     chosen_piece = piece_loc.get((start_rank, start_file))
-                    # if 'king' in chosen_piece.name:
-                    #     pass
+
                     if (end_rank, end_file) in pos_moves:
                         pygame.Rect.move(chosen_piece.active_image.get_rect(),
                                          end_rank * SQUARE + SQUARE / 5, end_file * SQUARE + SQUARE / 5)
@@ -385,36 +326,37 @@ def main():
                                 king_index[0] = (end_rank, end_file)
                             else:
                                 king_index[1] = (end_rank, end_file)
-                        move_log = update_it_all(start_rank, start_file, end_rank, end_file, move_log)
+
+                        piece_loc[(end_rank, end_file)] = piece_loc[start_rank, start_file]
+                        piece_loc[start_rank, start_file] = ' '
+                        board[end_rank][end_file] = board[start_rank][start_file]
+                        board[start_rank][start_file] = ' '
+
+                        if Pi.check_king_attacked(piece_loc, king_index[0], True):
+                            in_check = king_index[0]
+                        elif Pi.check_king_attacked(piece_loc, king_index[1], False):
+                            in_check = king_index[1]
+                        else:
+                            in_check = (-1, -1)
+
+                        tile_generator(window, in_check)
+
+                        move_log.append([(start_rank, start_file), (end_rank, end_file)])
+
+                        pygame.display.update()
                         if piece_loc[(end_rank, end_file)].color == 'w':
                             white_move = False
                         if piece_loc[(end_rank, end_file)].color == 'b':
                             white_move = True
                     else:
-                        un_highlight_potential_moves(window)  # un highlights if selected no tile
+                        tile_generator(window, in_check)  # un highlights if selected no tile
                         print("impossible move")
-
-                # print(check_if_mate(king_index[0], True))
-                # print(check_if_mate(king_index[1], False))
-                # print("white king threats: " + str(Pi.check_king_attacked(piece_loc, king_index[0], True)))
-                # print("black king threats: " + str(Pi.check_king_attacked(piece_loc, king_index[1], False)))
-                '''
-                if len(move_log) == 1:
-                    white_move = False
-                elif len(move_log) % 2 == 0:
-                    white_move = True
-                elif len(move_log) % 2 == 1:
-                    white_move = False
-                else:
-                    pass
-                '''
-                # print("White to move? " + str(white_move))
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_z:  # Z for undo (Like ctrl + z)
                     if len(move_log) != 0:  # No moves have been made
-                        update_it_all(end_rank, end_file, start_rank, start_file)
-
+                        # update_it_all(end_rank, end_file, start_rank, start_file)
+                        pass
                         # ^^ This function makes life easy, thanks for that. Only issue is captured piece not being
                         # returned to original square.
                     else:
