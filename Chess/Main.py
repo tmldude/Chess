@@ -92,15 +92,16 @@ def print_board():
 # works for either color piece because it does not check for legality
 # black and white pawns are the exception because they move unidirectional
 # needs to be passed through validate_moves() to get rid of the illegal moves
-def get_possible_moves(selected_index: (int, int), white_move: bool, king_index: (int, int)) -> list[(int, int)]:
+def get_possible_moves(selected_index: (int, int), white_move: bool, king_index: (int, int), last_move: Mo.Move) \
+        -> list[(int, int)]:
     r, c = selected_index
     selected_piece = piece_loc[r, c]
     piece_name = selected_piece.name
 
     if piece_name == 'white_pawn':
-        moves = Pi.pawn_move_white(selected_index, piece_loc)
+        moves = Pi.pawn_move_white(selected_index, piece_loc, last_move)
     elif piece_name == 'black_pawn':
-        moves = Pi.pawn_move_black(selected_index, piece_loc)
+        moves = Pi.pawn_move_black(selected_index, piece_loc, last_move)
     elif 'rook' in piece_name:
         moves = Pi.rook_move(selected_index, piece_loc, white_move)
     elif 'bishop' in piece_name:
@@ -128,11 +129,9 @@ def get_possible_moves(selected_index: (int, int), white_move: bool, king_index:
     if 'king' in piece_name and not selected_piece.has_moved and \
             not Pi.check_king_attacked(piece_loc, selected_index, white_move):
         checked += attempt_white_castle(white_move)
-    if 'pawn' in piece_name:
-        check_en_passant()
+
     return checked
 
-def check_en_passant():
 
 def attempt_white_castle(white_move):
     pos_castles = []
@@ -171,7 +170,7 @@ def attempt_white_castle(white_move):
     return pos_castles
 
 
-def check_if_mate(king_index: (int, int), is_white: bool) -> bool:
+def check_if_mate(king_index: (int, int), is_white: bool, last_move: Mo.Move) -> bool:
     color = 'b'
     if is_white:
         color = 'w'
@@ -181,7 +180,7 @@ def check_if_mate(king_index: (int, int), is_white: bool) -> bool:
         temp = piece_loc[key]
         if temp != ' ':
             if temp.color == color:
-                moves = get_possible_moves(key, is_white, king_index)
+                moves = get_possible_moves(key, is_white, king_index, last_move)
                 pos_moves += moves
                 if pos_moves:
                     return False
@@ -285,7 +284,6 @@ def get_tile(mouse_pos):
     return rank, file
 
 
-
 # takes in the move history generated in the main function and writes to a file in the project folder
 # the games move history
 # The game played:
@@ -304,6 +302,7 @@ def main():
     in_check = (-1, -1)
     pos_moves = []
     last_two_tile = []  # Tracks last two clicks of user
+    last_move = Mo.Move(None, None, None, None)
     move_log = []  # Tuple that stores previously executed moves
     king_index = [(0, 4), (7, 4)]
     white_move = True
@@ -318,10 +317,10 @@ def main():
                 mouse_coords = pygame.mouse.get_pos()
                 selected_tile = get_tile(mouse_coords)
 
-                if check_if_mate(king_index[0], True):
+                if check_if_mate(king_index[0], True, last_move):
                     print("Black Wins!")
 
-                elif check_if_mate(king_index[1], False):
+                elif check_if_mate(king_index[1], False, last_move):
                     print("White Wins!")
 
                 # if there are no tiles in last_two_tile, appends the current tile to last_two_tiles
@@ -330,11 +329,11 @@ def main():
                     # catches an attribute error if the selected tile has no piece
                     try:
                         if white_move and piece_loc[selected_tile].color == 'w':
-                            pos_moves = get_possible_moves(selected_tile, white_move, king_index[0])
+                            pos_moves = get_possible_moves(selected_tile, white_move, king_index[0], last_move)
                             tile_generator(window, in_check, pos_moves)
                             last_two_tile.append(selected_tile)
                         if not white_move and piece_loc[selected_tile].color == 'b':
-                            pos_moves = get_possible_moves(selected_tile, white_move, king_index[1])
+                            pos_moves = get_possible_moves(selected_tile, white_move, king_index[1], last_move)
                             tile_generator(window, in_check, pos_moves)
                             last_two_tile.append(selected_tile)
                     except AttributeError:
@@ -399,6 +398,16 @@ def main():
                                 board[new_rook_x][new_rook_y] = board[rook_from[0]][rook_from[1]]
                                 board[rook_from[0]][rook_from[1]] = ' '
 
+                        if chosen_piece.name == 'black_pawn' and last_move.piece_name == 'white_pawn':
+                            if piece_loc[end_pos] == ' ' and (end_file == start_file + 1 or end_file == start_file - 1):
+                                piece_loc[last_move.end_index] = ' '
+                                board[last_move.end_index[0]][last_move.end_index[1]] = ' '
+
+                        if chosen_piece.name == 'white_pawn' and last_move.piece_name == 'black_pawn':
+                            if piece_loc[end_pos] == ' ' and (end_file == start_file + 1 or end_file == start_file - 1):
+                                piece_loc[last_move.end_index] = ' '
+                                board[last_move.end_index[0]][last_move.end_index[1]] = ' '
+
                         # updates the board
                         pygame.Rect.move(chosen_piece.active_image.get_rect(),
                                          end_rank * SQUARE + SQUARE / 5, end_file * SQUARE + SQUARE / 5)
@@ -412,6 +421,7 @@ def main():
 
                         current_move = Mo.Move(chosen_piece.name, start_pos, end_pos, piece_loc[end_pos] != ' ')
                         move_log.append(current_move)
+                        last_move = current_move
                         # for move_old in move_log:
                         # print(move_old.start_index, move_old.end_index)
 

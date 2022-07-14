@@ -1,3 +1,6 @@
+import Move as Mo
+
+
 class Pieces:
     def __init__(self, name, color, image, is_king=False):
         self.name = name
@@ -26,8 +29,10 @@ class Pieces:
 given index. This is a list:[(int,int)] or a list of move indexes. After, the are_moves_valid() function
 should be ran to remove all illegal moves that may jump over pieces of go past them.'''
 
+
 # Pawn move function: for white pieces takes in index of selected pawn outputs possible pawn moves'''
-def pawn_move_white(index: (int, int), piece_loc: dict[(int, int), Pieces]) -> list[(int, int)]:
+def pawn_move_white(index: (int, int), piece_loc: dict[(int, int), Pieces], last_move: Mo.Move = None) \
+        -> list[(int, int)]:
     pos_moves = []
     x, y = index
     if x == 7 or x == 0:
@@ -37,6 +42,12 @@ def pawn_move_white(index: (int, int), piece_loc: dict[(int, int), Pieces]) -> l
     if x == 1:
         if piece_loc[(x + 1, y)] == ' ' and piece_loc[(x + 2, y)] == ' ':
             pos_moves.append((x + 2, y))
+    if x == 4:
+        if last_move:
+            if last_move.piece_name == 'black_pawn':
+                if last_move.start_index[0] == 6 and last_move.end_index[0] == 4 \
+                        and (last_move.end_index[1] == y + 1 or last_move.end_index[1] == y - 1):
+                    pos_moves.append((last_move.start_index[0] - 1, last_move.start_index[1]))
     if y == 0:
         if piece_loc[(x + 1, y + 1)] != ' ':
             if piece_loc[(x + 1, y + 1)].color == 'b':
@@ -54,8 +65,10 @@ def pawn_move_white(index: (int, int), piece_loc: dict[(int, int), Pieces]) -> l
                 pos_moves.append((x + 1, y - 1))
     return pos_moves
 
+
 # Pawn move function: for black pieces takes in index of selected pawn outputs possible pawn moves
-def pawn_move_black(index: (int, int), piece_loc: dict[(int, int), Pieces]) -> list[(int, int)]:
+def pawn_move_black(index: (int, int), piece_loc: dict[(int, int), Pieces], last_move: Mo.Move = None) \
+        -> list[(int, int)]:
     pos_moves = []
     x, y = index
     if x == 7 or x == 0:
@@ -65,6 +78,12 @@ def pawn_move_black(index: (int, int), piece_loc: dict[(int, int), Pieces]) -> l
     if x == 6:
         if piece_loc[(x - 1, y)] == ' ' and piece_loc[(x - 2, y)] == ' ':
             pos_moves.append((x - 2, y))
+    if x == 3:
+        if last_move:
+            if last_move.piece_name == 'white_pawn':
+                if last_move.start_index[0] == 1 and last_move.end_index[0] == 3 \
+                        and (last_move.end_index[1] == y + 1 or last_move.end_index[1] == y - 1):
+                    pos_moves.append((last_move.start_index[0] + 1, last_move.start_index[1]))
     if y == 0:
         if piece_loc[(x - 1, y + 1)] != ' ':
             if piece_loc[(x - 1, y + 1)].color == 'w':
@@ -81,6 +100,7 @@ def pawn_move_black(index: (int, int), piece_loc: dict[(int, int), Pieces]) -> l
             if piece_loc[(x - 1, y - 1)].color == 'w':
                 pos_moves.append((x - 1, y - 1))
     return pos_moves
+
 
 # Knight move function: takes in index of selected knight and outputs possible knight moves
 def knight_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
@@ -119,6 +139,7 @@ def knight_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_mo
         else:
             verified.append(move)
     return verified
+
 
 # Bishop move function: takes in index of selected bishop and outputs possible bishop moves
 def bishop_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
@@ -183,6 +204,7 @@ def bishop_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_mo
                         if piece_loc[move].color == 'w':
                             moves.append(move)
     return moves
+
 
 # Rook move function: takes in index of selected rook and outputs possible rook moves
 def rook_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
@@ -254,6 +276,7 @@ def rook_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move
                             moves.append((x, y + i + 1))
 
     return moves
+
 
 # Queen move function: takes in index of selected queen and outputs possible queen moves
 def queen_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
