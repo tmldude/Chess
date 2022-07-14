@@ -4,10 +4,7 @@ import Piece as Pi
 
 from Main import piece_loc
 from Main import empty_piece_loc
-from Main import pieces
 from Main import get_possible_moves
-from Main import validate_moves
-from Main import empty_board
 
 class PieceMoveTests(unittest.TestCase):
     def test_start_pos_pawn_w(self):

@@ -128,22 +128,22 @@ def check_king_attacked(pos_moves: list[(int, int)], index_king: (int, int), is_
     for move in knight_possibles:
         if piece_loc[move] != ' ':
             if 'knight' in piece_loc[move].name:
-                attackers += move
+                attackers.append(move)
     for move in rook_possibilities:
         if piece_loc[move] != ' ':
             if 'rook' in piece_loc[move].name or 'queen' in piece_loc[move].name:
-                attackers += move
+                attackers.append(move)
     for move in bishop_possibles:
         if piece_loc[move] != ' ':
             if 'bishop' in piece_loc[move].name or 'queen' in piece_loc[move].name:
-                attackers += move
+                attackers.append(move)
             if 'pawn' in piece_loc[move].name:
-                if is_white:
+                if not is_white:
                     pawn_pos = Pi.pawn_move_white(move, piece_loc)
                 else:
                     pawn_pos = Pi.pawn_move_black(move, piece_loc)
-                if move in pawn_pos:
-                    attackers += move
+                if index_king in pawn_pos:
+                    attackers.append(move)
     return attackers
 
 
@@ -352,8 +352,8 @@ def main():
                         un_highlight_potential_moves(window)  # un highlights if selected no tile
                         print("impossible move")
 
-                print(check_king_attacked(pos_moves, king_index[0], True))
-                print(check_king_attacked(pos_moves, king_index[1], False))
+                print("white king threats: " + str(check_king_attacked(pos_moves, king_index[0], True)))
+                print("black king threats: " + str(check_king_attacked(pos_moves, king_index[1], False)))
 
                 if len(move_log) == 1:
                     white_move = False
