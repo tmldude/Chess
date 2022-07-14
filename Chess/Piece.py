@@ -26,7 +26,7 @@ given index. This is a list:[(int,int)] or a list of move indexes. After, the ar
 should be ran to remove all illegal moves that may jump over pieces of go past them.'''
 
 # Pawn move function: for white pieces takes in index of selected pawn outputs possible pawn moves'''
-def pawn_move_white(index: (int, int), piece_loc) -> list[(int, int)]:
+def pawn_move_white(index: (int, int), piece_loc: dict[(int, int), Pieces]) -> list[(int, int)]:
     pos_moves = []
     x, y = index
     if x == 7 or x == 0:
@@ -54,7 +54,7 @@ def pawn_move_white(index: (int, int), piece_loc) -> list[(int, int)]:
     return pos_moves
 
 # Pawn move function: for black pieces takes in index of selected pawn outputs possible pawn moves
-def pawn_move_black(index: (int, int), piece_loc) -> list[(int, int)]:
+def pawn_move_black(index: (int, int), piece_loc: dict[(int, int), Pieces]) -> list[(int, int)]:
     pos_moves = []
     x, y = index
     if x == 7 or x == 0:
@@ -82,7 +82,7 @@ def pawn_move_black(index: (int, int), piece_loc) -> list[(int, int)]:
     return pos_moves
 
 # Knight move function: takes in index of selected knight and outputs possible knight moves
-def knight_move(index: (int, int), piece_loc, white_move) -> list[(int, int)]:
+def knight_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
     x, y = index
     moves = []
     if x + 2 < 8:
@@ -120,7 +120,7 @@ def knight_move(index: (int, int), piece_loc, white_move) -> list[(int, int)]:
     return verified
 
 # Bishop move function: takes in index of selected bishop and outputs possible bishop moves
-def bishop_move(index: (int, int), piece_loc, white_move) -> list[(int, int)]:
+def bishop_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
     x, y = index
     moves = []
     found_up_up = False
@@ -184,7 +184,7 @@ def bishop_move(index: (int, int), piece_loc, white_move) -> list[(int, int)]:
     return moves
 
 # Rook move function: takes in index of selected rook and outputs possible rook moves
-def rook_move(index: (int, int), piece_loc, white_move) -> list[(int, int)]:
+def rook_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
     x, y = index
     dist_x_0 = x - 0
     dist_x_7 = 7 - x
@@ -255,14 +255,14 @@ def rook_move(index: (int, int), piece_loc, white_move) -> list[(int, int)]:
     return moves
 
 # Queen move function: takes in index of selected queen and outputs possible queen moves
-def queen_move(index: (int, int), piece_loc, white_move) -> list[(int, int)]:
+def queen_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
     moves = rook_move(index, piece_loc, white_move)
     moves += bishop_move(index, piece_loc, white_move)
     return moves
 
 
 # King move function: takes in index of selected king and outputs possible king moves
-def king_move(index: (int, int), piece_loc, white_move) -> list[(int, int)]:
+def king_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
     x, y = index
     moves = [(x + 1, y + 1), (x + 1, y - 1), (x - 1, y + 1), (x - 1, y - 1), (x + 1, y), (x - 1, y), (x, y + 1),
              (x, y - 1)]
@@ -271,14 +271,44 @@ def king_move(index: (int, int), piece_loc, white_move) -> list[(int, int)]:
     for move in moves:
         new_x, new_y = move
         if 7 >= new_x >= 0 and 7 >= new_y >= 0:
-            if piece_loc[move] == ' ':
-                test_moves.append(move)
-            else:
-                if white_move:
-                    if piece_loc[move].color == 'b':
-                        test_moves.append(move)
+            checks_at_move = check_king_attacked(piece_loc, move, white_move)
+            if not checks_at_move:
+                if piece_loc[move] == ' ':
+                    test_moves.append(move)
                 else:
-                    if piece_loc[move].color == 'w':
-                        test_moves.append(move)
-
+                    if white_move:
+                        if piece_loc[move].color == 'b':
+                            test_moves.append(move)
+                    else:
+                        if piece_loc[move].color == 'w':
+                            test_moves.append(move)
     return test_moves
+
+
+# This function may handle checks? Note sure yet
+def check_king_attacked(piece_loc: dict[(int, int), Pieces], index_king: (int, int), is_white: bool) \
+        -> list[(int, int)]:
+    knight_possibles = knight_move(index_king, piece_loc, is_white)
+    rook_possibilities = rook_move(index_king, piece_loc, is_white)
+    bishop_possibles = bishop_move(index_king, piece_loc, is_white)
+    attackers = []
+    for move in knight_possibles:
+        if piece_loc[move] != ' ':
+            if 'knight' in piece_loc[move].name:
+                attackers.append(move)
+    for move in rook_possibilities:
+        if piece_loc[move] != ' ':
+            if 'rook' in piece_loc[move].name or 'queen' in piece_loc[move].name:
+                attackers.append(move)
+    for move in bishop_possibles:
+        if piece_loc[move] != ' ':
+            if 'bishop' in piece_loc[move].name or 'queen' in piece_loc[move].name:
+                attackers.append(move)
+            if 'pawn' in piece_loc[move].name:
+                if not is_white:
+                    pawn_pos = pawn_move_white(move, piece_loc)
+                else:
+                    pawn_pos = pawn_move_black(move, piece_loc)
+                if index_king in pawn_pos:
+                    attackers.append(move)
+    return attackers
