@@ -99,13 +99,13 @@ def get_possible_moves(selected_index: (int, int), white_move: bool, king_index:
         moves = Pi.pawn_move_white(selected_index, piece_loc)
     elif piece_name == 'black_pawn':
         moves = Pi.pawn_move_black(selected_index, piece_loc)
-    elif piece_name == 'white_rook' or piece_name == 'black_rook':
+    elif 'rook' in piece_name:
         moves = Pi.rook_move(selected_index, piece_loc, white_move)
-    elif piece_name == 'white_bishop' or piece_name == 'black_bishop':
+    elif 'bishop' in piece_name:
         moves = Pi.bishop_move(selected_index, piece_loc, white_move)
-    elif piece_name == 'white_knight' or piece_name == 'black_knight':
+    elif 'knight' in piece_name:
         moves = Pi.knight_move(selected_index, piece_loc, white_move)
-    elif piece_name == 'white_queen' or piece_name == 'black_queen':
+    elif 'queen' in piece_name:
         moves = Pi.queen_move(selected_index, piece_loc, white_move)
     else:
         moves = Pi.king_move(selected_index, piece_loc, white_move)
@@ -122,7 +122,48 @@ def get_possible_moves(selected_index: (int, int), white_move: bool, king_index:
             checks = Pi.check_king_attacked(copy, king_index, white_move)
         if not checks:
             checked.append(move)
+
+    if 'king' in piece_name and not selected_piece.has_moved and \
+            not Pi.check_king_attacked(piece_loc, selected_index, white_move):
+        checked += attempt_white_castle(white_move)
     return checked
+
+
+def attempt_white_castle(white_move):
+    pos_castles = []
+    if white_move:
+        if piece_loc[(0, 0)] != ' ':
+            if piece_loc[(0, 0)].name == 'white_rook' and not piece_loc[(0, 0)].has_moved and \
+                    piece_loc[(0, 1)] == ' ' and piece_loc[(0, 2)] == ' ' and piece_loc[(0, 3)] == ' ':
+                zero_one = Pi.check_king_attacked(piece_loc, (0, 1), white_move)
+                seven_two = Pi.check_king_attacked(piece_loc, (0, 2), white_move)
+                seven_three = Pi.check_king_attacked(piece_loc, (0, 3), white_move)
+                if not zero_one and not seven_two and not seven_three:
+                    pos_castles.append((0, 0))
+        if piece_loc[(0, 7)] != ' ':
+            if piece_loc[(0, 7)].name == 'white_rook' and not piece_loc[(0, 7)].has_moved and \
+                    piece_loc[(0, 5)] == ' ' and piece_loc[(0, 6)]:
+                seven_five = Pi.check_king_attacked(piece_loc, (0, 5), white_move)
+                seven_six = Pi.check_king_attacked(piece_loc, (0, 6), white_move)
+                if not seven_five and not seven_six:
+                    pos_castles.append((0, 7))
+    else:
+        if piece_loc[(7, 0)] != ' ':
+            if piece_loc[(7, 0)].name == 'black_rook' and not piece_loc[(7, 0)].has_moved and \
+                    piece_loc[(7, 1)] == ' ' and piece_loc[(7, 2)] == ' ' and piece_loc[(7, 3)] == ' ':
+                seven_one = Pi.check_king_attacked(piece_loc, (7, 1), white_move)
+                seven_two = Pi.check_king_attacked(piece_loc, (7, 2), white_move)
+                seven_three = Pi.check_king_attacked(piece_loc, (7, 3), white_move)
+                if not seven_one and not seven_two and not seven_three:
+                    pos_castles.append((7, 0))
+        if piece_loc[(7, 7)] != ' ':
+            if piece_loc[(7, 7)].name == 'black_rook' and not piece_loc[(7, 7)].has_moved and \
+                    piece_loc[(7, 5)] == ' ' and piece_loc[(7, 6)]:
+                seven_five = Pi.check_king_attacked(piece_loc, (7, 5), white_move)
+                seven_six = Pi.check_king_attacked(piece_loc, (7, 6), white_move)
+                if not seven_five and not seven_six:
+                    pos_castles.append((7, 7))
+    return pos_castles
 
 
 def check_if_mate(king_index: (int, int), is_white: bool) -> bool:
@@ -279,10 +320,9 @@ def main():
 
                 if check_if_mate(king_index[0], True):
                     print("Black Wins!")
-                    # return False
+
                 elif check_if_mate(king_index[1], False):
                     print("White Wins!")
-                    # return False
 
                 # if there are no tiles in last_two_tile, appends the current tile to last_two_tiles
                 # also gets the possible moves, validates them, and highlights them on the board
@@ -310,28 +350,73 @@ def main():
                 # once there are two tiles in last_two_tile, the board works to move the piece
                 else:
                     last_two_tile.append(selected_tile)
+                    start_pos = last_two_tile[0]
                     start_rank = last_two_tile[0][0]
                     start_file = last_two_tile[0][1]
+                    end_pos = last_two_tile[1]
                     end_rank = last_two_tile[1][0]
                     end_file = last_two_tile[1][1]
                     last_two_tile.clear()
-                    chosen_piece = piece_loc.get((start_rank, start_file))
+                    chosen_piece = piece_loc.get(start_pos)
 
                     if (end_rank, end_file) in pos_moves:
+                        # castling possibility, alters the data so the function outputs correctly. The castling tests
+                        # are done above and then added to pos_moves
+                        # this still checks to see if the king has not moved before checking the individual rook
+                        # coordinates and updating them
+                        # specifically, this has to update the end coordinates of the king and
+                        # move the rook which normally would be passed over if not selected
+                        if 'king' in chosen_piece.name and not chosen_piece.has_moved:
+                            new_rook_x = -1
+                            new_rook_y = -1
+                            rook_from = (-1, -1)
+                            if end_pos == (0, 0):
+                                end_file = 2
+                                new_rook_x = 0
+                                new_rook_y = 3
+                                rook_from = (0, 0)
+                            if end_pos == (7, 0):
+                                end_file = 2
+                                new_rook_x = 7
+                                new_rook_y = 3
+                                rook_from = (7, 0)
+                            if end_pos == (0, 7):
+                                end_file = 6
+                                new_rook_x = 0
+                                new_rook_y = 5
+                                rook_from = (0, 7)
+                            if end_pos == (7, 7):
+                                end_file = 6
+                                new_rook_x = 7
+                                new_rook_y = 5
+                                rook_from = (7, 7)
+                            if new_rook_x != -1 and new_rook_y != -1:
+                                end_pos = (end_rank, end_file)
+                                pygame.Rect.move(piece_loc[rook_from].active_image.get_rect(),
+                                                 new_rook_x * SQUARE + SQUARE / 5, new_rook_y * SQUARE + SQUARE / 5)
+                                piece_loc[(new_rook_x, new_rook_y)] = piece_loc[rook_from]
+                                piece_loc[rook_from] = ' '
+                                board[new_rook_x][new_rook_y] = board[rook_from[0]][rook_from[1]]
+                                board[rook_from[0]][rook_from[1]] = ' '
+
+                        # updates the board
                         pygame.Rect.move(chosen_piece.active_image.get_rect(),
                                          end_rank * SQUARE + SQUARE / 5, end_file * SQUARE + SQUARE / 5)
 
-                        if 'king' in piece_loc[(start_rank, start_file)].name:
-                            if piece_loc[(start_rank, start_file)].color == 'w':
-                                king_index[0] = (end_rank, end_file)
+                        # updates the coordinates of the kings if they are moved
+                        if 'king' in piece_loc[start_pos].name:
+                            if chosen_piece.color == 'w':
+                                king_index[0] = end_pos
                             else:
-                                king_index[1] = (end_rank, end_file)
+                                king_index[1] = end_pos
 
-                        piece_loc[(end_rank, end_file)] = piece_loc[start_rank, start_file]
-                        piece_loc[start_rank, start_file] = ' '
+                        # updates piece_loc and board
+                        piece_loc[end_pos] = piece_loc[start_pos]
+                        piece_loc[start_pos] = ' '
                         board[end_rank][end_file] = board[start_rank][start_file]
                         board[start_rank][start_file] = ' '
 
+                        # checks to see if the king is in check to change the tile color to 'red'
                         if Pi.check_king_attacked(piece_loc, king_index[0], True):
                             in_check = king_index[0]
                         elif Pi.check_king_attacked(piece_loc, king_index[1], False):
@@ -339,14 +424,17 @@ def main():
                         else:
                             in_check = (-1, -1)
 
+                        # updates the tile, places pieces, and updates display
                         tile_generator(window, in_check)
 
-                        move_log.append([(start_rank, start_file), (end_rank, end_file)])
+                        piece_loc[end_pos].has_moved = True
+                        move_log.append([start_pos, end_pos])
+                        print_board()
 
-                        pygame.display.update()
-                        if piece_loc[(end_rank, end_file)].color == 'w':
+                        # updates white move
+                        if piece_loc[end_pos].color == 'w':
                             white_move = False
-                        if piece_loc[(end_rank, end_file)].color == 'b':
+                        if piece_loc[end_pos].color == 'b':
                             white_move = True
                     else:
                         tile_generator(window, in_check)  # un highlights if selected no tile

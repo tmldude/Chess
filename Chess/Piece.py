@@ -4,6 +4,7 @@ class Pieces:
         self.color = color
         self.image = image
         self.is_king = is_king
+        self.has_moved = False
 
     ''' I looked into it and overloaded contractors are not a thing in Python
     def __init__(self, piece):  # Copy constructor
