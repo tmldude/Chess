@@ -7,6 +7,8 @@ from pygame import MOUSEBUTTONDOWN
 from Piece import Pieces
 import Piece as Pi
 
+import Move as Mo
+
 WIDTH = HEIGHT = 800
 DIMENSIONS = 8
 SQUARE = WIDTH // DIMENSIONS
@@ -126,8 +128,11 @@ def get_possible_moves(selected_index: (int, int), white_move: bool, king_index:
     if 'king' in piece_name and not selected_piece.has_moved and \
             not Pi.check_king_attacked(piece_loc, selected_index, white_move):
         checked += attempt_white_castle(white_move)
+    if 'pawn' in piece_name:
+        check_en_passant()
     return checked
 
+def check_en_passant():
 
 def attempt_white_castle(white_move):
     pos_castles = []
@@ -196,11 +201,10 @@ From here down is building the project, running main, tile generation etc'''
 
 
 class Tile:
-    def __int__(self, index: (int, int), chess_id, color, current_piece=' '):
+    def __init__(self, index: (int, int), chess_id, color):
         self.index = index
         self.chess_id = chess_id
         self.color = color
-        self.current_piece = current_piece
 
     def draw(self, win):
         x, y = self.index
@@ -227,17 +231,12 @@ def tile_generator(win, in_check=(-1, -1), pos_moves=None):
                 opposite_color = BLACK
 
             # generates tiles given color choices above
-            temp_tile = Tile()
-            temp_tile.index = (i, j)
-            temp_tile.chess_id = str(chr(j + 65)) + str(i + 1)
-
+            temp_tile = Tile((i, j), str(chr(j + 65)) + str(i + 1), chosen_tile_color)
             # checks to see if tile needs to be highlighted
+            tile_color = opposite_color
             if temp_tile.index in pos_moves:
                 temp_tile.color = LIGHT_BLUE
                 tile_color = YELLOW
-            else:
-                temp_tile.color = chosen_tile_color
-                tile_color = opposite_color
             if temp_tile.index == in_check:
                 temp_tile.color = RED
 
@@ -284,6 +283,7 @@ def get_tile(mouse_pos):
     rank = x // SQUARE
     file = y // SQUARE
     return rank, file
+
 
 
 # takes in the move history generated in the main function and writes to a file in the project folder
@@ -410,6 +410,11 @@ def main():
                             else:
                                 king_index[1] = end_pos
 
+                        current_move = Mo.Move(chosen_piece.name, start_pos, end_pos, piece_loc[end_pos] != ' ')
+                        move_log.append(current_move)
+                        # for move_old in move_log:
+                        # print(move_old.start_index, move_old.end_index)
+
                         # updates piece_loc and board
                         piece_loc[end_pos] = piece_loc[start_pos]
                         piece_loc[start_pos] = ' '
@@ -428,7 +433,6 @@ def main():
                         tile_generator(window, in_check)
 
                         piece_loc[end_pos].has_moved = True
-                        move_log.append([start_pos, end_pos])
                         print_board()
 
                         # updates white move
