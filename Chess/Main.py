@@ -406,29 +406,54 @@ def return_pgn_file(move_history: list[Mo.Move]) -> str:
         turns = len(move_history) // 2
         for i in range(1, turns+1):
             piece = ''
+            capture = ''
             pgn += (str(i) + '. ')
+
+            ''' White piece '''
 
             if move_history[(2*i)-2].piece_name[6] == 'p':
                 piece = ''
-            elif move_history[(2*i)-2].piece_name[6] == 'p':
+            elif move_history[(2*i)-2].piece_name[6] == 'k':
                 if move_history[(2*i)-2].piece_name[7] == 'n':
                     piece = 'N'
                 else:
                     piece = 'K'
             else:
                 piece = move_history[(2*i)-2].piece_name[6].capitalize()
-            pgn += piece + index_to_SAN(move_history[(2*i)-2].end_index) + ' '
+
+            if not move_history[(2 * i) - 2].capture:
+                capture = ''
+            else:
+                if move_history[(2 * i) - 2].piece_name[6] == 'p':
+                    piece = index_to_SAN(move_history[(2 * i) - 1].start_index)[0]
+                else:
+                    pass
+                capture = 'x'
+
+            pgn += piece + capture + index_to_SAN(move_history[(2*i)-2].end_index) + ' '
+
+            ''' Black piece '''
 
             if move_history[(2*i)-1].piece_name[6] == 'p':
                 piece = ''
-            elif move_history[(2*i)-1].piece_name[6] == 'p':
+            elif move_history[(2*i)-1].piece_name[6] == 'k':
                 if move_history[(2*i)-1].piece_name[7] == 'n':
                     piece = 'N'
                 else:
                     piece = 'K'
             else:
                 piece = move_history[(2*i)-1].piece_name[6].capitalize()
-            pgn += piece + index_to_SAN(move_history[(2*i)-1].end_index) + ' '
+
+            if not move_history[(2 * i) - 1].capture:
+                capture = ''
+            else:
+                if move_history[(2*i)-1].piece_name[6] == 'p':
+                    piece = index_to_SAN(move_history[(2*i)-1].start_index)[0]
+                else:
+                    pass
+                capture = 'x'
+
+            pgn += piece + capture + index_to_SAN(move_history[(2*i)-1].end_index) + ' '
 
     return pgn
 
