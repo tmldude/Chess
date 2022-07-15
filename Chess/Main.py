@@ -181,9 +181,9 @@ def check_if_mate(king_index: (int, int), is_white: bool, last_move: Mo.Move) ->
     check_if_mate(king_index, is_white, last_move)
     :param king_index: index of the selected king
     :param is_white: True when white king, False when black king
-    :param last_move: last move a user inputed and was played for En Passant
+    :param last_move: last move a user inputted and was played for En Passant
     - checks every piece of a certain color to see if they can move at all. This is regular movement, blocking mate,
-         king moving out of mate etc
+         king moving out of mate etc.
     - If there are no possible moves then it is checkmate
     :return:
             False = not checkmate
@@ -397,7 +397,6 @@ def return_pgn_file(move_history: list[Mo.Move]) -> str:
 def main():
     pygame.init()
 
-    in_check = (-1, -1)
     pos_moves = []
     last_two_tile = []  # Tracks last two clicks of user
     last_move = Mo.Move(None, None, None, None)
@@ -547,14 +546,6 @@ def main():
                         piece_loc[start_pos] = ' '
                         board[end_rank][end_file] = board[start_rank][start_file]
                         board[start_rank][start_file] = ' '
-
-                        # checks to see if the king is in check to change the tile color to 'red'
-                        if Pi.check_king_attacked(piece_loc, king_index[0], True):
-                            in_check = king_index[0]
-                        elif Pi.check_king_attacked(piece_loc, king_index[1], False):
-                            in_check = king_index[1]
-                        else:
-                            in_check = (-1, -1)
 
                         # updates the tile, places pieces, and updates display
                         tile_generator(window, king_index)
