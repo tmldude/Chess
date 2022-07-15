@@ -378,6 +378,12 @@ def promotion_func(mouse_coords, is_white: bool):
             return possible_choices[choices]
     return ' '
 
+# Python index: (int, int) to standard algebraic notation
+def index_to_SAN(index: (int, int)):
+    r, f = index
+    san = str(chr(f + 97)) + str(r + 1)
+    return san
+
 
 def return_pgn_file(move_history: list[Mo.Move]) -> str:
     """
@@ -386,12 +392,18 @@ def return_pgn_file(move_history: list[Mo.Move]) -> str:
     - Takes in the move list and uses the data to craft a string so the game can be easily retraced
     :return: Outputs a crafted string of the games move history
         Example:
-        Black | White
-        1 d4 | d5
-        2 knf3 | bd3
-        etc
+        1. e4 e5 2. Nf3 Ne6 3. Bb5
     """
-    raise NameError("Unimplemented")
+    pgn = ""
+    if len(move_history) == 0:
+        pgn = "no game"
+    else:
+        turns = len(move_history) // 2
+        for i in range(1, turns+1):
+            pgn += (str(i) + '. ')
+            pgn += index_to_SAN(move_history[(2*i)-2].end_index) + ' ' + index_to_SAN(move_history[(2*i)-1].end_index) + ' '
+
+    return pgn
 
 
 def main():
@@ -578,11 +590,12 @@ def main():
                         # returned to original square.
                     else:
                         pass
+                elif event.key == pygame.K_e:
+                    print(return_pgn_file(move_log))
                 else:
                     pass
             else:
                 pass
-
 
 if __name__ == "__main__":
     main()
