@@ -6,7 +6,6 @@ from Main import piece_loc
 from Main import empty_piece_loc
 from Main import pieces
 from Main import get_possible_moves
-from Main import validate_moves
 from Main import empty_board
 
 class AdvancedPieceTests(unittest.TestCase):

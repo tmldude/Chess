@@ -1,7 +1,6 @@
 import pygame
 import sys
 
-# import time
 from pygame import MOUSEBUTTONDOWN
 
 from Piece import Pieces
@@ -19,8 +18,8 @@ YELLOW = (204, 204, 0)
 BLUE = (50, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
-LIGHT_BLUE = (195, 216, 228)  # Made these in case pure white and black interfere with the
-DARK_BLUE = (78, 109, 128)  # colors of the pieces
+LIGHT_BLUE = (195, 216, 228)
+DARK_BLUE = (78, 109, 128)
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Chess")
@@ -87,14 +86,19 @@ def print_board():
         print(board[i])
 
 
-# get_possible_moves(selected_index, white_move, king_index, last_move)
-# selected_index = index of the user chosen piece
-# white_move = bool saying if black or white's move
-# king_index = index of the king of the color either black's or white's king
-# last_move = the last move made on the board to test En Passant
-# Outputs all legal moves for the piece at selected index
 def get_possible_moves(selected_index: (int, int), white_move: bool, king_index: (int, int), last_move: Mo.Move) \
         -> list[(int, int)]:
+    """
+    get_possible_moves(selected_index, white_move, king_index, last_move)
+    :param selected_index: index of the user chosen piece
+    :param white_move: bool saying if black or white's move
+    :param king_index: index of the king of the color either black's or white's king
+    :param last_move: the last move made on the board to test En Passant
+    - Checks all moves whether they are legal or not. Creating checks/blocking checks
+    - Covers castling
+    :return: list[(int, int)] of all legal moves for the piece at selected index
+    """
+
     r, c = selected_index
     selected_piece = piece_loc[r, c]
     piece_name = selected_piece.name
@@ -133,17 +137,22 @@ def get_possible_moves(selected_index: (int, int), white_move: bool, king_index:
     # the special castling condition
     if 'king' in piece_name and not selected_piece.has_moved and \
             not Pi.check_king_attacked(piece_loc, selected_index, white_move):
-        checked += attempt_white_castle(white_move)
+        checked += attempt_castle(white_move)
 
     return checked
 
-# attempt_white_castle(white_move) outputs a list of 4 possible castle moves: white king side, white queen side
-# black king side, black queen side
-# Depending on the bool white_move the criteria switch for checking the white or black castling
-# The testing is extensive because the king movement in castling cannot be done through a check
-# but the rook can be attacked or move through check. Additionally, there cannot be pieces inbetween them
-# The function output is processed in main where specific movement criteria must be met
-def attempt_white_castle(white_move: bool) -> list[(int, int)]:
+
+def attempt_castle(white_move: bool) -> list[(int, int)]:
+    """
+    attempt_white_castle(white_move)
+    :param white_move: bool for whose turn it is: True = white, False = black
+    - Depending on the bool white_move the criteria switch for checking the white or black castling
+    - The testing is extensive because the king movement in castling cannot be done through a check
+        but the rook can be attacked or move through check. Additionally, there cannot be pieces inbetween them
+    - The function output is processed in main where specific movement criteria must be met
+    :return: list[(int, int)] outputs a list of 4 possible castle moves: white king side, white queen side
+        maximum size of outputted list is 2, king side/queen side castle for each color
+    """
     pos_castles = []
     x = 7
     test_name = 'black_rook'
@@ -166,12 +175,20 @@ def attempt_white_castle(white_move: bool) -> list[(int, int)]:
                 pos_castles.append((x, 7))
     return pos_castles
 
-# check_if_mate(king_index, is_white, last_move)
-# checks every piece of a certain color to see if they can move at all. This is regular movement, blocking mate,
-# king moving out of mate etc.
-# False = not checkmate
-# True = checkmate
+
 def check_if_mate(king_index: (int, int), is_white: bool, last_move: Mo.Move) -> bool:
+    """
+    check_if_mate(king_index, is_white, last_move)
+    :param king_index: index of the selected king
+    :param is_white: True when white king, False when black king
+    :param last_move: last move a user inputed and was played for En Passant
+    - checks every piece of a certain color to see if they can move at all. This is regular movement, blocking mate,
+         king moving out of mate etc
+    - If there are no possible moves then it is checkmate
+    :return:
+            False = not checkmate
+            True = checkmate
+    """
     color = 'b'
     if is_white:
         color = 'w'
@@ -188,19 +205,13 @@ def check_if_mate(king_index: (int, int), is_white: bool, last_move: Mo.Move) ->
     return True
 
 
-'''Above is piece movement and placement 
--
--
--
--
--
--
--
--
-From here down is building the project, running main, tile generation etc'''
-
-
 class Tile:
+    """
+    Tile: The board tile
+    :param index: the x, y coordinate of the tile on a (0,0)->(7,7) 8x8 grid
+    :param chess_id: the chess board ID of a given tile. Example: (0,0) = A1
+    :param color: the color of the tile when it is drawn
+    """
     def __init__(self, index: (int, int), chess_id, color):
         self.index = index
         self.chess_id = chess_id
@@ -216,12 +227,20 @@ class Tile:
         scale = WIDTH / DIMENSIONS
         return x * scale + (scale / 2), y * scale + (scale / 2)
 
-# tile_generator(win, in_check, pos_moves)
-# win = window for PyGames
-# in_check = condition for a tile turning the color red. If king is in check turn that king red
-# pos_moves = the moves to be highlighted. None if returning the board back to default ie un-highlighting
-# Generates all tiles and defines the colors/specifications uses the draw function in tile
+
 def tile_generator(win, in_check=(-1, -1), pos_moves=None):
+    """
+    tile_generator(win, in_check, pos_moves)
+    :param win: the PyGames window
+    :param in_check: default = (-1, -1). When inputed, it is a king coordinate and that king is in check. Used
+        when deciding if a tile needs to be the color RED to indicate a king in check
+    :param pos_moves: the moves to be highlighted. None if returning the board back to default ie un-highlighting
+    - Generates all tiles and defines the colors/specifications uses the draw function in tile
+    - Placed the tiles on the newly generated board
+    - Draws a grid (if enabled, causes lag)
+    - Updates the PyGames display
+    """
+
     if pos_moves is None:
         pos_moves = []
     font = pygame.font.Font(None, 25)
@@ -290,13 +309,18 @@ def get_tile(mouse_pos):
     return rank, file
 
 
-# takes in the move history generated in the main function and writes to a file in the project folder
-# the games move history
-# The game played:
-# 1 d4 | d5
-# 2 knf3 | bd3
-# etc
-def return_pgn_file(move_history: list[(int, int)]):
+def return_pgn_file(move_history: list[Mo.Move]) -> str:
+    """
+    return_pgn_file(move_history):
+    :param move_history: list of Move class objects storing the history of move
+    - Takes in the move list and uses the data to craft a string so the game can be easily retraced
+    :return: Outputs a crafted string of the games move history
+        Example:
+        Black | White
+        1 d4 | d5
+        2 knf3 | bd3
+        etc
+    """
     raise NameError("Unimplemented")
 
 
