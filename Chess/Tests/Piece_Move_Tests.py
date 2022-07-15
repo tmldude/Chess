@@ -190,7 +190,7 @@ class PieceMoveTests(unittest.TestCase):
         for location in piece_loc:
             x, y = location
             if piece_loc[location] != ' ':
-                val_ans = get_possible_moves(location, True)
+                val_ans = get_possible_moves(location, True, (0, 4))
                 if piece_loc[location].name == "white_pawn":
                     self.assertEqual(val_ans.sort(), [(x + 1, y), (x + 2, y)].sort())
                 elif piece_loc[location].name == "white_knight":
@@ -206,7 +206,7 @@ class PieceMoveTests(unittest.TestCase):
         for location in piece_loc:
             x, y = location
             if piece_loc[location] != ' ':
-                val_ans = get_possible_moves(location, False)
+                val_ans = get_possible_moves(location, False, (7, 4))
                 if piece_loc[location].name == "black_pawn":
                     self.assertEqual(val_ans.sort(), [(x - 1, y), (x - 2, y)].sort())
                 elif piece_loc[location].name == "black_knight":

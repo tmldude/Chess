@@ -86,8 +86,8 @@ def print_board():
         print(board[i])
 
 
-def get_possible_moves(selected_index: (int, int), white_move: bool, king_index: (int, int), last_move: Mo.Move) \
-        -> list[(int, int)]:
+def get_possible_moves(selected_index: (int, int), white_move: bool, king_index: (int, int),
+                       last_move: Mo.Move = None) -> list[(int, int)]:
     """
     get_possible_moves(selected_index, white_move, king_index, last_move)
     :param selected_index: index of the user chosen piece
