@@ -400,8 +400,30 @@ def return_pgn_file(move_history: list[Mo.Move]) -> str:
     else:
         turns = len(move_history) // 2
         for i in range(1, turns+1):
+            piece = ''
             pgn += (str(i) + '. ')
-            pgn += index_to_SAN(move_history[(2*i)-2].end_index) + ' ' + index_to_SAN(move_history[(2*i)-1].end_index) + ' '
+
+            if move_history[(2*i)-2].piece_name[6] == 'p':
+                piece = ''
+            elif move_history[(2*i)-2].piece_name[6] == 'p':
+                if move_history[(2*i)-2].piece_name[7] == 'n':
+                    piece = 'N'
+                else:
+                    piece = 'K'
+            else:
+                piece = move_history[(2*i)-2].piece_name[6].capitalize()
+            pgn += piece + index_to_SAN(move_history[(2*i)-2].end_index) + ' '
+
+            if move_history[(2*i)-1].piece_name[6] == 'p':
+                piece = ''
+            elif move_history[(2*i)-1].piece_name[6] == 'p':
+                if move_history[(2*i)-1].piece_name[7] == 'n':
+                    piece = 'N'
+                else:
+                    piece = 'K'
+            else:
+                piece = move_history[(2*i)-1].piece_name[6].capitalize()
+            pgn += piece + index_to_SAN(move_history[(2*i)-1].end_index) + ' '
 
     return pgn
 
