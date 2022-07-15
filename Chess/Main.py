@@ -86,44 +86,51 @@ def print_board():
         print(board[i])
 
 
-def get_possible_moves(selected_index: (int, int), white_move: bool, king_index: (int, int),
-                       last_move: Mo.Move = None) -> list[(int, int)]:
+def get_possible_moves(selected_index: tuple[int, int], white_move: bool, king_index: tuple[int, int],
+                       last_move: Mo.Move = None, custom_piece_loc: dict[tuple[int, int], Pieces | str] = None) \
+        -> list[(int, int)]:
     """
     get_possible_moves(selected_index, white_move, king_index, last_move)
     :param selected_index: index of the user chosen piece
     :param white_move: bool saying if black or white's move
     :param king_index: index of the king of the color either black's or white's king
-    :param last_move: the last move made on the board to test En Passant
+    :param last_move: the last move made on the board to test En Passant or None
+    :param custom_piece_loc: a custom piece location dictionary used testing or None
+
     - Checks all moves whether they are legal or not. Creating checks/blocking checks
     - Covers castling
     :return: list[(int, int)] of all legal moves for the piece at selected index
     """
 
+    pos_piece_loc = piece_loc
+    if custom_piece_loc:
+        pos_piece_loc = custom_piece_loc
+
     r, c = selected_index
-    selected_piece = piece_loc[r, c]
+    selected_piece = pos_piece_loc[r, c]
     piece_name = selected_piece.name
 
     # gets the possible moves from the individual piece functions in Piece
     if piece_name == 'white_pawn':
-        moves = Pi.pawn_move_white(selected_index, piece_loc, last_move)
+        moves = Pi.pawn_move_white(selected_index, pos_piece_loc, last_move)
     elif piece_name == 'black_pawn':
-        moves = Pi.pawn_move_black(selected_index, piece_loc, last_move)
+        moves = Pi.pawn_move_black(selected_index, pos_piece_loc, last_move)
     elif 'rook' in piece_name:
-        moves = Pi.rook_move(selected_index, piece_loc, white_move)
+        moves = Pi.rook_move(selected_index, pos_piece_loc, white_move)
     elif 'bishop' in piece_name:
-        moves = Pi.bishop_move(selected_index, piece_loc, white_move)
+        moves = Pi.bishop_move(selected_index, pos_piece_loc, white_move)
     elif 'knight' in piece_name:
-        moves = Pi.knight_move(selected_index, piece_loc, white_move)
+        moves = Pi.knight_move(selected_index, pos_piece_loc, white_move)
     elif 'queen' in piece_name:
-        moves = Pi.queen_move(selected_index, piece_loc, white_move)
+        moves = Pi.queen_move(selected_index, pos_piece_loc, white_move)
     else:
-        moves = Pi.king_move(selected_index, piece_loc, white_move)
+        moves = Pi.king_move(selected_index, pos_piece_loc, white_move)
 
     # checks each move to see if it creates or can stop checks
     # adds them if they do not create checks and if the can block a check
     checked = []
     for move in moves:
-        copy = piece_loc.copy()
+        copy = pos_piece_loc.copy()
         temp = copy[selected_index]
         copy[move] = temp
         copy[selected_index] = ' '
@@ -146,6 +153,7 @@ def attempt_castle(white_move: bool) -> list[(int, int)]:
     """
     attempt_white_castle(white_move)
     :param white_move: bool for whose turn it is: True = white, False = black
+
     - Depending on the bool white_move the criteria switch for checking the white or black castling
     - The testing is extensive because the king movement in castling cannot be done through a check
         but the rook can be attacked or move through check. Additionally, there cannot be pieces inbetween them
@@ -153,6 +161,7 @@ def attempt_castle(white_move: bool) -> list[(int, int)]:
     :return: list[(int, int)] outputs a list of 4 possible castle moves: white king side, white queen side
         maximum size of outputted list is 2, king side/queen side castle for each color
     """
+
     pos_castles = []
     x = 7
     test_name = 'black_rook'
@@ -176,12 +185,13 @@ def attempt_castle(white_move: bool) -> list[(int, int)]:
     return pos_castles
 
 
-def check_if_mate(king_index: (int, int), is_white: bool, last_move: Mo.Move) -> bool:
+def check_if_mate(king_index: tuple[int, int], is_white: bool, last_move: Mo.Move = None) -> bool:
     """
     check_if_mate(king_index, is_white, last_move)
     :param king_index: index of the selected king
     :param is_white: True when white king, False when black king
     :param last_move: last move a user inputted and was played for En Passant
+
     - checks every piece of a certain color to see if they can move at all. This is regular movement, blocking mate,
          king moving out of mate etc.
     - If there are no possible moves then it is checkmate
@@ -213,7 +223,7 @@ class Tile:
     :param color: the color of the tile when it is drawn
     """
 
-    def __init__(self, index: (int, int), chess_id, color):
+    def __init__(self, index: tuple[int, int], chess_id, color):
         self.index = index
         self.chess_id = chess_id
         self.color = color
@@ -229,13 +239,14 @@ class Tile:
         return x * scale + (scale / 2), y * scale + (scale / 2)
 
 
-def tile_generator(win, king_index_list, pos_moves=None):
+def tile_generator(win, king_index_list: list[tuple[int, int]], pos_moves: list[tuple[int, int]] = None):
     """
     tile_generator(win, in_check, pos_moves)
     :param win: the PyGames window
     :param king_index_list: It is a list of king coordinates to be used to see uf that king is in check. Used
         when deciding if a tile needs to be the color RED to indicate a king in check
     :param pos_moves: the moves to be highlighted. None if returning the board back to default ie un-highlighting
+
     - Generates all tiles and defines the colors/specifications uses the draw function in tile
     - Placed the tiles on the newly generated board
     - Draws a grid (if enabled, causes lag)
@@ -257,10 +268,10 @@ def tile_generator(win, king_index_list, pos_moves=None):
             # generates tiles given color choices above
             temp_tile = Tile((i, j), str(chr(j + 65)) + str(i + 1), chosen_tile_color)
             # checks to see if tile needs to be highlighted
-            tile_color = opposite_color
+            text_color = opposite_color
             if temp_tile.index in pos_moves:
                 temp_tile.color = LIGHT_BLUE
-                tile_color = YELLOW
+                text_color = YELLOW
 
             # checks if the king tile needs to be red
             if Pi.check_king_attacked(piece_loc, king_index_list[0], True):
@@ -276,10 +287,15 @@ def tile_generator(win, king_index_list, pos_moves=None):
 
             # generates tile chess coordinate
             # text = font.render(temp_tile.chess_id, True, opposite_color)
-            if i == 0 or j == 0:
-                text = font.render(temp_tile.chess_id, True, tile_color)
+            if i == 0:
+                text = font.render(temp_tile.chess_id[0], True, text_color)
                 text_rect = text.get_rect(
-                    center=(i * SQUARE + SQUARE - (SQUARE / 7), j * SQUARE + SQUARE - (SQUARE / 10)))
+                    center=(i + (SQUARE / 8), j * SQUARE + SQUARE - (SQUARE / 10)))
+                window.blit(text, text_rect)
+            if j == 0:
+                text = font.render(temp_tile.chess_id[1], True, text_color)
+                text_rect = text.get_rect(
+                    center=(i * SQUARE + SQUARE - (SQUARE / 7), j + (SQUARE / 8)))
                 window.blit(text, text_rect)
 
     # draw_grid(window, WIDTH, WIDTH)  # adds a lot of lag
@@ -316,21 +332,13 @@ def get_tile(mouse_pos):
     file = y // SQUARE
     return rank, file
 
-# sets the coordinate of in_check to turn the tile red
-def in_check_finder(king_index_list):
-    if Pi.check_king_attacked(piece_loc, king_index_list[0], True):
-        return king_index_list[0]
-    elif Pi.check_king_attacked(piece_loc, king_index_list[1], False):
-        return king_index_list[1]
-    else:
-        return -1, -1
 
 def promotion_func(mouse_coords, is_white: bool):
     """
     promotion_func(mouse_coords, is_white):
     :param mouse_coords: the coordinates of the cursor
     :param is_white: bool for whose turn it is: True = white, False = black
-    :return:
+    :return: Either a chosen promotion piece: queen, bishop, knight, rook or an empty string
     """
     scale = WIDTH / DIMENSIONS
     color_depends = WHITE
@@ -394,6 +402,7 @@ def return_pgn_file(move_history: list[Mo.Move]) -> str:
     """
     return_pgn_file(move_history):
     :param move_history: list of Move class objects storing the history of move
+
     - Takes in the move list and uses the data to craft a string so the game can be easily retraced
     :return: Outputs a crafted string of the games move history
         Example:
@@ -472,6 +481,7 @@ def main():
     white_promotion = False
     black_promotion = False
 
+    font = pygame.font.Font(None, 80)
     print_board()
     tile_generator(window, king_index)
 
@@ -501,10 +511,33 @@ def main():
                         tile_generator(window, king_index)
 
                 elif check_if_mate(king_index[0], True, last_move):
-                    print("Black Wins!")
+                    statement = ' '
+                    if not Pi.check_king_attacked(piece_loc, king_index[0], True):
+                        print("Stalemate!")
+                        statement = "Stalemate!"
+                    if Pi.check_king_attacked(piece_loc, king_index[0], True):
+                        print("Black Wins!")
+                        statement = "Black Wins!"
+
+                    if statement != ' ':
+                        text = font.render(statement, True, BLACK)
+                        text_rect = text.get_rect(center=(400, 200))
+                        window.blit(text, text_rect)
+                        pygame.display.update()
 
                 elif check_if_mate(king_index[1], False, last_move):
-                    print("White Wins!")
+                    statement = ' '
+                    if not Pi.check_king_attacked(piece_loc, king_index[1], False):
+                        print("Stalemate!")
+                        statement = "Stalemate!"
+                    if Pi.check_king_attacked(piece_loc, king_index[1], False):
+                        print("White Wins!")
+                        statement = "White Wins!"
+
+                    text = font.render(statement, True, BLACK)
+                    text_rect = text.get_rect(center=(400, 200))
+                    window.blit(text, text_rect)
+                    pygame.display.update()
 
                 # if there are no tiles in last_two_tile, appends the current tile to last_two_tiles
                 # also gets the possible moves, validates them, and highlights them on the board
@@ -541,7 +574,9 @@ def main():
                     last_two_tile.clear()
                     chosen_piece = piece_loc.get(start_pos)
 
-                    if (end_rank, end_file) in pos_moves:
+                    # if the chosen tile to move to is one of the possible moves
+                    if end_pos in pos_moves:
+
                         # castling possibility, alters the data so the function outputs correctly. The castling tests
                         # are done above and then added to pos_moves
                         # this still checks to see if the king has not moved before checking the individual rook
@@ -580,16 +615,24 @@ def main():
                                 piece_loc[rook_from] = ' '
                                 board[new_rook_x][new_rook_y] = board[rook_from[0]][rook_from[1]]
                                 board[rook_from[0]][rook_from[1]] = ' '
+                                rook_move = Mo.Move(piece_loc[(new_rook_x, new_rook_y)].name, rook_from,
+                                                    (new_rook_x, new_rook_y), False, castling=True)
+                                move_log.append(rook_move)
 
                         # en passant checks
+                        # updates pawn that needs to be removed manually
                         if chosen_piece.name == 'black_pawn' and last_move.piece_name == 'white_pawn':
                             if piece_loc[end_pos] == ' ' and (end_file == start_file + 1 or end_file == start_file - 1):
                                 piece_loc[last_move.end_index] = ' '
                                 board[last_move.end_index[0]][last_move.end_index[1]] = ' '
+                                pawn_move = Mo.Move('white_pawn', last_move.end_index, (-1, -1), True, en_passant=True)
+                                move_log.append(pawn_move)
                         if chosen_piece.name == 'white_pawn' and last_move.piece_name == 'black_pawn':
                             if piece_loc[end_pos] == ' ' and (end_file == start_file + 1 or end_file == start_file - 1):
                                 piece_loc[last_move.end_index] = ' '
                                 board[last_move.end_index[0]][last_move.end_index[1]] = ' '
+                                pawn_move = Mo.Move('black_pawn', last_move.end_index, (-1, -1), True, en_passant=True)
+                                move_log.append(pawn_move)
 
                         # updates the board
                         pygame.Rect.move(chosen_piece.active_image.get_rect(),
@@ -612,11 +655,10 @@ def main():
                         piece_loc[start_pos] = ' '
                         board[end_rank][end_file] = board[start_rank][start_file]
                         board[start_rank][start_file] = ' '
+                        piece_loc[end_pos].has_moved = True
 
                         # updates the tile, places pieces, and updates display
                         tile_generator(window, king_index)
-
-                        piece_loc[end_pos].has_moved = True
                         print_board()
 
                         # promotion covering
@@ -638,7 +680,15 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_z:  # Z for undo (Like ctrl + z)
                     if len(move_log) != 0:  # No moves have been made
+                        '''
+                        new_start_index = last_move.end_index
+                        new_end_index = last_move.start_index
+                        piece_loc[end_pos] = piece_loc[start_pos]
+                        piece_loc[start_pos] = ' '
+                        board[end_rank][end_file] = board[start_rank][start_file]
+                        board[start_rank][start_file] = ' '
                         # update_it_all(end_rank, end_file, start_rank, start_file)
+                        '''
                         pass
                         # ^^ This function makes life easy, thanks for that. Only issue is captured piece not being
                         # returned to original square.

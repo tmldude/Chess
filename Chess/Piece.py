@@ -3,7 +3,14 @@ import Move as Mo
 
 class Pieces:
     """
+    Pieces:
+    :param name: string that contains the name of the chess piece
+    :param color: 'b' for black or 'w' for white
+    :param image: the reference line for an image
 
+    Other:
+    has_moved: states whether the piece has moved or not. False = has not moved, True = has moved
+        - used for testing castling
     """
     def __init__(self, name, color, image):
         self.name = name
@@ -18,13 +25,14 @@ piece moving to a normal square, and making sure the moves are on the chess grid
 The get_possible_moves function in Main.py removes the rest of the illegal moves and covers castling.'''
 
 
-def pawn_move_white(index: (int, int), piece_loc: dict[(int, int), Pieces], last_move: Mo.Move = None) \
-        -> list[(int, int)]:
+def pawn_move_white(index: tuple[int, int], piece_loc: dict[tuple[int, int], Pieces | str], last_move: Mo.Move = None) \
+        -> list[tuple[int, int]]:
     """
     pawn_move_white(index, piece_loc, last_move)
     :param index: chosen white pawn location to search for moves at
     :param piece_loc: piece location dictionary
     :param last_move: the last user inputted move played on the board. Used for En Passant testing
+
     - Finds all moves for the pawn, given if the pawn is attacking, moving forward, or blocked from (0,0) -> (7,7)
     - Covers En Passant
     - Does not remove all illegal moves
@@ -64,13 +72,14 @@ def pawn_move_white(index: (int, int), piece_loc: dict[(int, int), Pieces], last
     return pos_moves
 
 
-def pawn_move_black(index: (int, int), piece_loc: dict[(int, int), Pieces], last_move: Mo.Move = None) \
-        -> list[(int, int)]:
+def pawn_move_black(index: tuple[int, int], piece_loc: dict[tuple[int, int], Pieces | str], last_move: Mo.Move = None) \
+        -> list[tuple[int, int]]:
     """
     pawn_move_black(index, piece_loc, last_move)
     :param index: chosen black pawn location to search for moves at
     :param piece_loc: piece location dictionary
     :param last_move: the last user inputted move played on the board. Used for En Passant testing
+
     - Finds all moves for the pawn, given if the pawn is attacking, moving forward, or blocked from (0,0) -> (7,7)
     - Covers En Passant
     - Does not remove all illegal moves
@@ -110,12 +119,14 @@ def pawn_move_black(index: (int, int), piece_loc: dict[(int, int), Pieces], last
     return pos_moves
 
 
-def knight_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
+def knight_move(index: tuple[int, int], piece_loc: dict[tuple[int, int], Pieces | str], white_move: bool) \
+        -> list[tuple[int, int]]:
     """
     knight_move(index, piece_loc, white_move)
     :param index: chosen knight location to search for moves at
     :param piece_loc: piece location dictionary
     :param white_move: bool for whose turn it is: True = white, False = black
+
     - Finds all moves for the knight within the (0,0) -> (7,7) grid.
     - Then removes pieces of the same color from the move list
     - Does not remove all illegal moves
@@ -159,12 +170,14 @@ def knight_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_mo
     return verified
 
 
-def bishop_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
+def bishop_move(index: tuple[int, int], piece_loc: dict[tuple[int, int], Pieces | str], white_move: bool) \
+        -> list[tuple[int, int]]:
     """
     bishop_move(index, piece_loc, white_move)
     :param index: chosen bishop location to search for moves at
     :param piece_loc: piece location dictionary
     :param white_move: bool for whose turn it is: True = white, False = black
+
     - Finds all moves for the bishop, stops at pieces of the same color and first piece of the opposite color
     - Does not remove all illegal moves
     :return: list[(int, int)] of possible bishop moves
@@ -233,12 +246,14 @@ def bishop_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_mo
     return moves
 
 
-def rook_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
+def rook_move(index: tuple[int, int], piece_loc: dict[tuple[int, int], Pieces | str], white_move: bool) \
+        -> list[tuple[int, int]]:
     """
     rook_move(index, piece_loc, white_move)
     :param index: chosen rook location to search for moves at
     :param piece_loc: piece location dictionary
     :param white_move: bool for whose turn it is: True = white, False = black
+
     - Finds all moves for the rook that do not go beyond the first piece of the opposite color or
         pieces of its own color
     - Does not remove all illegal moves
@@ -315,12 +330,14 @@ def rook_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move
     return moves
 
 
-def queen_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
+def queen_move(index: tuple[int, int], piece_loc: dict[tuple[int, int], Pieces | str], white_move: bool) \
+        -> list[tuple[int, int]]:
     """
     queen_move(index, piece_loc, white_move)
     :param index: chosen queen location to search for moves at
     :param piece_loc: piece location dictionary
     :param white_move: bool for whose turn it is: True = white, False = black
+
     - Finds all moves for the queen, using the rook move and bishop move algorithms
     - Does not remove all illegal moves
     :return: list[(int, int)] of possible queen moves
@@ -331,12 +348,14 @@ def queen_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_mov
     return moves
 
 
-def king_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move: bool) -> list[(int, int)]:
+def king_move(index: tuple[int, int], piece_loc: dict[tuple[int, int], Pieces | str], white_move: bool) \
+        -> list[tuple[int, int]]:
     """
     king_move(index, piece_loc, white_move)
     :param index: chosen king location to search for moves at
     :param piece_loc: piece location dictionary
     :param white_move: bool for whose turn it is: True = white, False = black
+
     - Finds all moves for the king, then removes moves outside of the (0,0) -> (7,7) grid
     - Also removes pieces of the same color in the radius
     - Does not remove all illegal moves or handle castling
@@ -363,18 +382,19 @@ def king_move(index: (int, int), piece_loc: dict[(int, int), Pieces], white_move
     return test_moves
 
 
-def check_king_attacked(piece_loc: dict[(int, int), Pieces], index_king: (int, int), is_white: bool) \
-        -> list[(int, int)]:
+def check_king_attacked(piece_loc: dict[tuple[int, int], Pieces | str], index_king: tuple[int, int], is_white: bool) \
+        -> list[tuple[int, int]]:
     """
     check_king_attacked(piece_loc, index_king, is_white)
     :param piece_loc: piece location dictionary
     :param index_king: location of the king in question, either black or white
     :param is_white: bool for whose turn it is: True = white, False = black
+
     - Checks the king's safety by calculating piece move functions from the king's location.
     - Example: The white king finds all black piece's attacking it by running it through the white piece
         move functions that output black pieces and empty squares. Then it filters out the empty squares.
         If there are remaining pieces, they have to be attacking the king
-    :return: list[(int, int)] of all attackers on the king
+    :return: list[tuple[int, int]] of all attackers on the king
     """
 
     knight_possibles = knight_move(index_king, piece_loc, is_white)
