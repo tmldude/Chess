@@ -418,9 +418,10 @@ def return_pgn_file(move_history: list[Mo.Move]) -> str:
         for i in range(1, turns+1):
             piece = ''
             capture = ''
+            check = ''
             pgn += (str(i) + '. ')
 
-            ''' White piece '''
+            ''' White's move '''
 
             if move_history[(2*i)-2].piece_name[6] == 'p':
                 piece = ''
@@ -441,9 +442,10 @@ def return_pgn_file(move_history: list[Mo.Move]) -> str:
                     pass
                 capture = 'x'
 
-            pgn += piece + capture + index_to_SAN(move_history[(2*i)-2].end_index) + ' '
+            pgn += piece + capture + index_to_SAN(move_history[(2*i)-2].end_index) + move_history[(2*i)-2].gamestate \
+                   + ' '
 
-            ''' Black piece '''
+            ''' Black's move' '''
 
             if move_history[(2*i)-1].piece_name[6] == 'p':
                 piece = ''
@@ -464,7 +466,8 @@ def return_pgn_file(move_history: list[Mo.Move]) -> str:
                     pass
                 capture = 'x'
 
-            pgn += piece + capture + index_to_SAN(move_history[(2*i)-1].end_index) + ' '
+            pgn += piece + capture + index_to_SAN(move_history[(2*i)-1].end_index) + move_history[(2*i)-1].gamestate \
+                   + ' '
 
     return pgn
 
@@ -500,6 +503,7 @@ def main():
                     if chosen != ' ':
                         piece_loc[last_move.end_index] = chosen
                         board[last_move.end_index[0]][last_move.end_index[1]] = chosen.name
+                        move_log[-1].promotion = '=' + chosen.name[6]
                         white_promotion = False
                         tile_generator(window, king_index)
                 elif black_promotion:
@@ -507,6 +511,7 @@ def main():
                     if chosen != ' ':
                         piece_loc[last_move.end_index] = chosen
                         board[last_move.end_index[0]][last_move.end_index[1]] = chosen.name
+                        move_log[-1].promotion = '=' + chosen.name[6]
                         black_promotion = False
                         tile_generator(window, king_index)
 
@@ -514,9 +519,11 @@ def main():
                     statement = ' '
                     if not Pi.check_king_attacked(piece_loc, king_index[0], True):
                         print("Stalemate!")
+                        move_log[-1].gamestate = '½'
                         statement = "Stalemate!"
                     if Pi.check_king_attacked(piece_loc, king_index[0], True):
                         print("Black Wins!")
+                        move_log[-1].gamestate = '#'
                         statement = "Black Wins!"
 
                     if statement != ' ':
@@ -529,9 +536,11 @@ def main():
                     statement = ' '
                     if not Pi.check_king_attacked(piece_loc, king_index[1], False):
                         print("Stalemate!")
+                        move_log[len(move_log)-1].gamestate = '½'
                         statement = "Stalemate!"
                     if Pi.check_king_attacked(piece_loc, king_index[1], False):
                         print("White Wins!")
+                        move_log[len(move_log) - 1].gamestate = '#'
                         statement = "White Wins!"
 
                     text = font.render(statement, True, BLACK)
@@ -673,6 +682,9 @@ def main():
                             white_move = False
                         if piece_loc[end_pos].color == 'b':
                             white_move = True
+
+                        # if Pi.check_king_attacked(piece_loc, king_index[0], True):
+
                     else:
                         tile_generator(window, king_index)  # un highlights if selected no tile
                         print("impossible move")
