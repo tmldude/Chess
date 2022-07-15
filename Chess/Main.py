@@ -378,8 +378,13 @@ def promotion_func(mouse_coords, is_white: bool):
             return possible_choices[choices]
     return ' '
 
-# Python index: (int, int) to standard algebraic notation
+
 def index_to_SAN(index: (int, int)):
+    """
+    index_to_SAN(index)
+    :param index: Integer tuple as recorded in pos_list
+    :return: chess algebraic notation of a tile. Ex: (4, 4) -> e4
+    """
     r, f = index
     san = str(chr(f + 97)) + str(r + 1)
     return san
