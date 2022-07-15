@@ -398,6 +398,8 @@ def return_pgn_file(move_history: list[Mo.Move]) -> str:
     :return: Outputs a crafted string of the games move history
         Example:
         1. e4 e5 2. Nf3 Ne6 3. Bb5
+
+    TODO: Checks, checkmate, and might be issue with generating PGN if white is last to move
     """
     pgn = ""
     if len(move_history) == 0:
