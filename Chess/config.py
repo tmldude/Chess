@@ -1,0 +1,17 @@
+#  PyGame Settings
+
+WIDTH = HEIGHT = 800
+DIMENSIONS = 8
+SQUARE = WIDTH // DIMENSIONS
+
+
+#  Colors
+
+WHITE = (255, 255, 255)
+GREY = (128, 128, 128)
+YELLOW = (204, 204, 0)
+BLUE = (50, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+LIGHT_BLUE = (195, 216, 228)
+DARK_BLUE = (78, 109, 128)

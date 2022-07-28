@@ -5,71 +5,18 @@ from pygame import MOUSEBUTTONDOWN
 
 from Piece import Pieces
 import Piece as Pi
-
 import Move as Mo
+import Board
+import export
 
-WIDTH = HEIGHT = 800
-DIMENSIONS = 8
-SQUARE = WIDTH // DIMENSIONS
+import config
 
-WHITE = (255, 255, 255)
-GREY = (128, 128, 128)
-YELLOW = (204, 204, 0)
-BLUE = (50, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-LIGHT_BLUE = (195, 216, 228)
-DARK_BLUE = (78, 109, 128)
-
-window = pygame.display.set_mode((WIDTH, HEIGHT))
+window = pygame.display.set_mode((config.WIDTH, config.HEIGHT))
 pygame.display.set_caption("Chess")
 
-board = [['  ' for i in range(8)] for j in range(8)]
-
-pieces = {}  # Dictionary to assign piece names to their piece objects
-''' To access piece images call from dictionary pieces. Ex: pieces['white_king'] '''
-
-piece_names = ['white_king', 'white_queen', 'white_rook', 'white_bishop', 'white_knight', 'white_pawn',
-               'black_king', 'black_queen', 'black_rook', 'black_bishop', 'black_knight', 'black_pawn']
-
-for p in piece_names:
-    new_piece = Pieces(p, p[0], "piece_images/" + p + ".png")
-    pieces[p] = new_piece
-
-# assigned indexes to pieces using the pieces dictionary
-piece_loc = {(0, 0): pieces["white_rook"], (0, 1): pieces["white_knight"],
-             (0, 2): pieces["white_bishop"], (0, 3): pieces["white_queen"], (0, 4): pieces["white_king"],
-             (0, 5): pieces["white_bishop"], (0, 6): pieces["white_knight"], (0, 7): pieces["white_rook"],
-             (1, 0): pieces["white_pawn"], (1, 1): pieces["white_pawn"], (1, 2): pieces["white_pawn"],
-             (1, 3): pieces["white_pawn"], (1, 4): pieces["white_pawn"], (1, 5): pieces["white_pawn"],
-             (1, 6): pieces["white_pawn"], (1, 7): pieces["white_pawn"],
-             (2, 0): " ", (2, 1): " ", (2, 2): " ", (2, 3): " ", (2, 4): " ", (2, 5): " ", (2, 6): " ", (2, 7): " ",
-             (3, 0): " ", (3, 1): " ", (3, 2): " ", (3, 3): " ", (3, 4): " ", (3, 5): " ", (3, 6): " ", (3, 7): " ",
-             (4, 0): " ", (4, 1): " ", (4, 2): " ", (4, 3): " ", (4, 4): " ", (4, 5): " ", (4, 6): " ", (4, 7): " ",
-             (5, 0): " ", (5, 1): " ", (5, 2): " ", (5, 3): " ", (5, 4): " ", (5, 5): " ", (5, 6): " ", (5, 7): " ",
-             (6, 0): pieces["black_pawn"], (6, 1): pieces["black_pawn"], (6, 2): pieces["black_pawn"],
-             (6, 3): pieces["black_pawn"],
-             (6, 4): pieces["black_pawn"], (6, 5): pieces["black_pawn"], (6, 6): pieces["black_pawn"],
-             (6, 7): pieces["black_pawn"], (7, 0): pieces["black_rook"], (7, 1): pieces["black_knight"],
-             (7, 2): pieces["black_bishop"], (7, 3): pieces["black_queen"], (7, 4): pieces["black_king"],
-             (7, 5): pieces["black_bishop"], (7, 6): pieces["black_knight"], (7, 7): pieces["black_rook"]}
-
-# for testing
-empty_piece_loc = \
-    {(0, 0): " ", (0, 1): " ", (0, 2): " ", (0, 3): " ", (0, 4): " ", (0, 5): " ", (0, 6): " ", (0, 7): " ",
-     (1, 0): " ", (1, 1): " ", (1, 2): " ", (1, 3): " ", (1, 4): " ", (1, 5): " ", (1, 6): " ", (1, 7): " ",
-     (2, 0): " ", (2, 1): " ", (2, 2): " ", (2, 3): " ", (2, 4): " ", (2, 5): " ", (2, 6): " ", (2, 7): " ",
-     (3, 0): " ", (3, 1): " ", (3, 2): " ", (3, 3): " ", (3, 4): " ", (3, 5): " ", (3, 6): " ", (3, 7): " ",
-     (4, 0): " ", (4, 1): " ", (4, 2): " ", (4, 3): " ", (4, 4): " ", (4, 5): " ", (4, 6): " ", (4, 7): " ",
-     (5, 0): " ", (5, 1): " ", (5, 2): " ", (5, 3): " ", (5, 4): " ", (5, 5): " ", (5, 6): " ", (5, 7): " ",
-     (6, 0): " ", (6, 1): " ", (6, 2): " ", (6, 3): " ", (6, 4): " ", (6, 5): " ", (6, 6): " ", (6, 7): " ",
-     (7, 0): " ", (7, 1): " ", (7, 2): " ", (7, 3): " ", (7, 4): " ", (7, 5): " ", (7, 6): " ", (7, 7): " "}
-
-
-def empty_board(piece_dict):
-    for key in piece_dict:
-        piece_dict[key] = " "
-
+piece_loc = Board.piece_loc
+board = Board.board
+pieces = Board.pieces
 
 # places the pieces on the board given the index
 for key_coord in piece_loc:
@@ -230,12 +177,12 @@ class Tile:
 
     def draw(self, win):
         x, y = self.index
-        scale = WIDTH / DIMENSIONS
+        scale = config.WIDTH / config.DIMENSIONS
         pygame.draw.rect(win, self.color, (x * scale, y * scale, scale, scale))
 
     def get_center(self):
         x, y = self.index
-        scale = WIDTH / DIMENSIONS
+        scale = config.WIDTH / config.DIMENSIONS
         return x * scale + (scale / 2), y * scale + (scale / 2)
 
 
@@ -257,21 +204,21 @@ def tile_generator(win, king_index_list: list[tuple[int, int]], pos_moves: list[
         pos_moves = []
     font = pygame.font.Font(None, 25)
 
-    for i in range(DIMENSIONS):
-        for j in range(DIMENSIONS):
-            chosen_tile_color = DARK_BLUE
-            opposite_color = WHITE
+    for i in range(config.DIMENSIONS):
+        for j in range(config.DIMENSIONS):
+            chosen_tile_color = config.DARK_BLUE
+            opposite_color = config.WHITE
             if (i + j) % 2 == 0:
-                chosen_tile_color = WHITE
-                opposite_color = BLACK
+                chosen_tile_color = config.WHITE
+                opposite_color = config.BLACK
 
             # generates tiles given color choices above
             temp_tile = Tile((i, j), str(chr(j + 65)) + str(i + 1), chosen_tile_color)
             # checks to see if tile needs to be highlighted
             text_color = opposite_color
             if temp_tile.index in pos_moves:
-                temp_tile.color = LIGHT_BLUE
-                text_color = YELLOW
+                temp_tile.color = config.LIGHT_BLUE
+                text_color = config.YELLOW
 
             # checks if the king tile needs to be red
             if Pi.check_king_attacked(piece_loc, king_index_list[0], True):
@@ -281,7 +228,7 @@ def tile_generator(win, king_index_list: list[tuple[int, int]], pos_moves: list[
             else:
                 in_check = (-1, -1)
             if temp_tile.index == in_check:
-                temp_tile.color = RED
+                temp_tile.color = config.RED
 
             temp_tile.draw(win)
 
@@ -290,12 +237,12 @@ def tile_generator(win, king_index_list: list[tuple[int, int]], pos_moves: list[
             if i == 0:
                 text = font.render(temp_tile.chess_id[0], True, text_color)
                 text_rect = text.get_rect(
-                    center=(i + (SQUARE / 8), j * SQUARE + SQUARE - (SQUARE / 10)))
+                    center=(i + (config.SQUARE / 8), j * config.SQUARE + config.SQUARE - (config.SQUARE / 10)))
                 window.blit(text, text_rect)
             if j == 0:
                 text = font.render(temp_tile.chess_id[1], True, text_color)
                 text_rect = text.get_rect(
-                    center=(i * SQUARE + SQUARE - (SQUARE / 7), j + (SQUARE / 8)))
+                    center=(i * config.SQUARE + config.SQUARE - (config.SQUARE / 7), j + (config.SQUARE / 8)))
                 window.blit(text, text_rect)
 
     # draw_grid(window, WIDTH, WIDTH)  # adds a lot of lag
@@ -307,9 +254,9 @@ def tile_generator(win, king_index_list: list[tuple[int, int]], pos_moves: list[
 def draw_grid(win, rows, width):
     gap = width // 8
     for i in range(rows):
-        pygame.draw.line(win, BLACK, (0, i * gap), (width, i * gap))
+        pygame.draw.line(win, config.BLACK, (0, i * gap), (width, i * gap))
         for j in range(rows):
-            pygame.draw.line(win, BLACK, (j * gap, 0), (j * gap, width))
+            pygame.draw.line(win, config.BLACK, (j * gap, 0), (j * gap, width))
 
 
 # Places pieces and their images on starting tiles.
@@ -319,8 +266,8 @@ def place_pieces(win):
         try:
             piece_loc[key].active_image = pygame.image.load(piece_loc[key].image)
             piece_loc[key].active_image.convert()
-            win.blit(piece_loc[key].active_image, pygame.Rect(x_co * SQUARE + SQUARE / 5,
-                                                              y_co * SQUARE + SQUARE / 5, SQUARE, SQUARE))
+            win.blit(piece_loc[key].active_image, pygame.Rect(x_co * config.SQUARE + config.SQUARE / 5,
+                                                              y_co * config.SQUARE + config.SQUARE / 5, config.SQUARE, config.SQUARE))
         except AttributeError:
             pass
 
@@ -328,8 +275,8 @@ def place_pieces(win):
 # Takes in mouse position and outputs the rank and file of the tile to be used for identification
 def get_tile(mouse_pos):
     x, y = mouse_pos
-    rank = x // SQUARE
-    file = y // SQUARE
+    rank = x // config.SQUARE
+    file = y // config.SQUARE
     return rank, file
 
 
@@ -340,14 +287,14 @@ def promotion_func(mouse_coords, is_white: bool):
     :param is_white: bool for whose turn it is: True = white, False = black
     :return: Either a chosen promotion piece: queen, bishop, knight, rook or an empty string
     """
-    scale = WIDTH / DIMENSIONS
-    color_depends = WHITE
+    scale = config.WIDTH / config.DIMENSIONS
+    color_depends = config.WHITE
     queen = pieces['black_queen']
     bishop = pieces['black_bishop']
     knight = pieces['black_knight']
     rook = pieces['black_rook']
     if is_white:
-        color_depends = BLACK
+        color_depends = config.BLACK
         queen = pieces['white_queen']
         bishop = pieces['white_bishop']
         knight = pieces['white_knight']
@@ -375,7 +322,7 @@ def promotion_func(mouse_coords, is_white: bool):
     image_list = [queen_img, bishop_img, knight_img, rook_img]
     i = 0
     for image in image_list:
-        window.blit(image, pygame.Rect(WIDTH / 4 + (i * 100) + 20, HEIGHT / 4 + (scale / 4) - 15, scale, scale))
+        window.blit(image, pygame.Rect(config.WIDTH / 4 + (i * 100) + 20, config.HEIGHT / 4 + (scale / 4) - 15, scale, scale))
         i += 1
 
     pygame.display.update()
@@ -385,91 +332,6 @@ def promotion_func(mouse_coords, is_white: bool):
         if selected_piece == choices:
             return possible_choices[choices]
     return ' '
-
-
-def index_to_SAN(index: (int, int)):
-    """
-    index_to_SAN(index)
-    :param index: Integer tuple as recorded in pos_list
-    :return: chess algebraic notation of a tile. Ex: (4, 4) -> e4
-    """
-    r, f = index
-    san = str(chr(f + 97)) + str(r + 1)
-    return san
-
-
-def return_pgn_file(move_history: list[Mo.Move]) -> str:
-    """
-    return_pgn_file(move_history):
-    :param move_history: list of Move class objects storing the history of move
-
-    - Takes in the move list and uses the data to craft a string so the game can be easily retraced
-    :return: Outputs a crafted string of the games move history
-        Example:
-        1. e4 e5 2. Nf3 Ne6 3. Bb5
-
-    TODO: Checks, checkmate, and might be issue with generating PGN if white is last to move
-    """
-    pgn = ""
-    if len(move_history) == 0:
-        pgn = "no game"
-    else:
-        turns = len(move_history) // 2
-        for i in range(1, turns+1):
-            piece = ''
-            capture = ''
-            check = ''
-            pgn += (str(i) + '. ')
-
-            ''' White's move '''
-
-            if move_history[(2*i)-2].piece_name[6] == 'p':
-                piece = ''
-            elif move_history[(2*i)-2].piece_name[6] == 'k':
-                if move_history[(2*i)-2].piece_name[7] == 'n':
-                    piece = 'N'
-                else:
-                    piece = 'K'
-            else:
-                piece = move_history[(2*i)-2].piece_name[6].capitalize()
-
-            if not move_history[(2 * i) - 2].capture:
-                capture = ''
-            else:
-                if move_history[(2 * i) - 2].piece_name[6] == 'p':
-                    piece = index_to_SAN(move_history[(2 * i) - 1].start_index)[0]
-                else:
-                    pass
-                capture = 'x'
-
-            pgn += piece + capture + index_to_SAN(move_history[(2*i)-2].end_index) + move_history[(2*i)-2].gamestate \
-                   + ' '
-
-            ''' Black's move' '''
-
-            if move_history[(2*i)-1].piece_name[6] == 'p':
-                piece = ''
-            elif move_history[(2*i)-1].piece_name[6] == 'k':
-                if move_history[(2*i)-1].piece_name[7] == 'n':
-                    piece = 'N'
-                else:
-                    piece = 'K'
-            else:
-                piece = move_history[(2*i)-1].piece_name[6].capitalize()
-
-            if not move_history[(2 * i) - 1].capture:
-                capture = ''
-            else:
-                if move_history[(2*i)-1].piece_name[6] == 'p':
-                    piece = index_to_SAN(move_history[(2*i)-1].start_index)[0]
-                else:
-                    pass
-                capture = 'x'
-
-            pgn += piece + capture + index_to_SAN(move_history[(2*i)-1].end_index) + move_history[(2*i)-1].gamestate \
-                   + ' '
-
-    return pgn
 
 
 def main():
@@ -527,7 +389,7 @@ def main():
                         statement = "Black Wins!"
 
                     if statement != ' ':
-                        text = font.render(statement, True, BLACK)
+                        text = font.render(statement, True, config.BLACK)
                         text_rect = text.get_rect(center=(400, 200))
                         window.blit(text, text_rect)
                         pygame.display.update()
@@ -543,7 +405,7 @@ def main():
                         move_log[len(move_log) - 1].gamestate = '#'
                         statement = "White Wins!"
 
-                    text = font.render(statement, True, BLACK)
+                    text = font.render(statement, True, config.BLACK)
                     text_rect = text.get_rect(center=(400, 200))
                     window.blit(text, text_rect)
                     pygame.display.update()
@@ -619,7 +481,7 @@ def main():
                             if new_rook_x != -1 and new_rook_y != -1:
                                 end_pos = (end_rank, end_file)
                                 pygame.Rect.move(piece_loc[rook_from].active_image.get_rect(),
-                                                 new_rook_x * SQUARE + SQUARE / 5, new_rook_y * SQUARE + SQUARE / 5)
+                                                 new_rook_x * config.SQUARE + config.SQUARE / 5, new_rook_y * config.SQUARE + config.SQUARE / 5)
                                 piece_loc[(new_rook_x, new_rook_y)] = piece_loc[rook_from]
                                 piece_loc[rook_from] = ' '
                                 board[new_rook_x][new_rook_y] = board[rook_from[0]][rook_from[1]]
@@ -645,7 +507,7 @@ def main():
 
                         # updates the board
                         pygame.Rect.move(chosen_piece.active_image.get_rect(),
-                                         end_rank * SQUARE + SQUARE / 5, end_file * SQUARE + SQUARE / 5)
+                                         end_rank * config.SQUARE + config.SQUARE / 5, end_file * config.SQUARE + config.SQUARE / 5)
 
                         # updates the coordinates of the kings if they are moved
                         if 'king' in piece_loc[start_pos].name:
@@ -692,6 +554,8 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_z:  # Z for undo (Like ctrl + z)
                     if len(move_log) != 0:  # No moves have been made
+                        pass
+                    else:
                         '''
                         new_start_index = last_move.end_index
                         new_end_index = last_move.start_index
@@ -702,16 +566,13 @@ def main():
                         # update_it_all(end_rank, end_file, start_rank, start_file)
                         '''
                         pass
-                        # ^^ This function makes life easy, thanks for that. Only issue is captured piece not being
-                        # returned to original square.
-                    else:
-                        pass
                 elif event.key == pygame.K_e:
-                    print(return_pgn_file(move_log))
+                    print(export.return_pgn_file(move_log))
                 else:
                     pass
             else:
                 pass
+
 
 if __name__ == "__main__":
     main()
