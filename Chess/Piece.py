@@ -1,7 +1,4 @@
 import Move as Mo
-import Board
-
-piece_loc = Board.piece_loc
 
 class Pieces:
     """
