@@ -91,45 +91,9 @@ def get_possible_moves(selected_index: tuple[int, int], white_move: bool, king_i
     # the special castling condition
     if 'king' in piece_name and not selected_piece.has_moved and \
             not Pi.check_king_attacked(piece_loc, selected_index, white_move):
-        checked += attempt_castle(white_move)
+        checked += Pi.attempt_castle(white_move)
 
     return checked
-
-
-def attempt_castle(white_move: bool) -> list[(int, int)]:
-    """
-    attempt_white_castle(white_move)
-    :param white_move: bool for whose turn it is: True = white, False = black
-
-    - Depending on the bool white_move the criteria switch for checking the white or black castling
-    - The testing is extensive because the king movement in castling cannot be done through a check
-        but the rook can be attacked or move through check. Additionally, there cannot be pieces inbetween them
-    - The function output is processed in main where specific movement criteria must be met
-    :return: list[(int, int)] outputs a list of 4 possible castle moves: white king side, white queen side
-        maximum size of outputted list is 2, king side/queen side castle for each color
-    """
-
-    pos_castles = []
-    x = 7
-    test_name = 'black_rook'
-    if white_move:
-        x = 0
-        test_name = 'white_rook'
-    if piece_loc[(x, 0)] != ' ':
-        if piece_loc[(x, 0)].name == test_name and not piece_loc[(x, 0)].has_moved and \
-                piece_loc[(x, 1)] == ' ' and piece_loc[(x, 2)] == ' ' and piece_loc[(x, 3)] == ' ':
-            seven_two = Pi.check_king_attacked(piece_loc, (x, 2), white_move)
-            seven_three = Pi.check_king_attacked(piece_loc, (x, 3), white_move)
-            if not seven_two and not seven_three:
-                pos_castles.append((x, 0))
-    if piece_loc[(x, 7)] != ' ':
-        if piece_loc[(x, 7)].name == test_name and not piece_loc[(x, 7)].has_moved and \
-                piece_loc[(x, 5)] == ' ' and piece_loc[(x, 6)]:
-            seven_five = Pi.check_king_attacked(piece_loc, (x, 5), white_move)
-            seven_six = Pi.check_king_attacked(piece_loc, (x, 6), white_move)
-            if not seven_five and not seven_six:
-                pos_castles.append((x, 7))
-    return pos_castles
 
 
 def check_if_mate(king_index: tuple[int, int], is_white: bool, last_move: Mo.Move = None) -> bool:

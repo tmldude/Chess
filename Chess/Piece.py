@@ -1,5 +1,7 @@
 import Move as Mo
+import Board
 
+piece_loc = Board.piece_loc
 
 class Pieces:
     """
@@ -428,3 +430,39 @@ def check_king_attacked(piece_loc: dict[tuple[int, int], Pieces | str], index_ki
                 attackers.append(move)
 
     return attackers
+
+
+def attempt_castle(white_move: bool) -> list[(int, int)]:
+    """
+    attempt_white_castle(white_move)
+    :param white_move: bool for whose turn it is: True = white, False = black
+
+    - Depending on the bool white_move the criteria switch for checking the white or black castling
+    - The testing is extensive because the king movement in castling cannot be done through a check
+        but the rook can be attacked or move through check. Additionally, there cannot be pieces inbetween them
+    - The function output is processed in main where specific movement criteria must be met
+    :return: list[(int, int)] outputs a list of 4 possible castle moves: white king side, white queen side
+        maximum size of outputted list is 2, king side/queen side castle for each color
+    """
+
+    pos_castles = []
+    x = 7
+    test_name = 'black_rook'
+    if white_move:
+        x = 0
+        test_name = 'white_rook'
+    if piece_loc[(x, 0)] != ' ':
+        if piece_loc[(x, 0)].name == test_name and not piece_loc[(x, 0)].has_moved and \
+                piece_loc[(x, 1)] == ' ' and piece_loc[(x, 2)] == ' ' and piece_loc[(x, 3)] == ' ':
+            seven_two = check_king_attacked(piece_loc, (x, 2), white_move)
+            seven_three = check_king_attacked(piece_loc, (x, 3), white_move)
+            if not seven_two and not seven_three:
+                pos_castles.append((x, 0))
+    if piece_loc[(x, 7)] != ' ':
+        if piece_loc[(x, 7)].name == test_name and not piece_loc[(x, 7)].has_moved and \
+                piece_loc[(x, 5)] == ' ' and piece_loc[(x, 6)]:
+            seven_five = check_king_attacked(piece_loc, (x, 5), white_move)
+            seven_six = check_king_attacked(piece_loc, (x, 6), white_move)
+            if not seven_five and not seven_six:
+                pos_castles.append((x, 7))
+    return pos_castles
