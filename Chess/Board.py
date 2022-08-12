@@ -9,7 +9,7 @@ piece_names = ['white_king', 'white_queen', 'white_rook', 'white_bishop', 'white
                'black_king', 'black_queen', 'black_rook', 'black_bishop', 'black_knight', 'black_pawn']
 
 for p in piece_names:
-    new_piece = Pieces(p, p[0], "piece_images/" + p + ".png")
+    new_piece = Pieces(p, p[0], "piece_images" + "/" + p + ".png")
     pieces[p] = new_piece
 
 # assigned indexes to pieces using the pieces dictionary

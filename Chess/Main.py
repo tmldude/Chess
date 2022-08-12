@@ -91,7 +91,7 @@ def get_possible_moves(selected_index: tuple[int, int], white_move: bool, king_i
     # the special castling condition
     if 'king' in piece_name and not selected_piece.has_moved and \
             not Pi.check_king_attacked(piece_loc, selected_index, white_move):
-        checked += Pi.attempt_castle(white_move)
+        checked += Pi.attempt_castle(piece_loc, white_move)
 
     return checked
 

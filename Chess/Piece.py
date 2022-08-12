@@ -429,9 +429,10 @@ def check_king_attacked(piece_loc: dict[tuple[int, int], Pieces | str], index_ki
     return attackers
 
 
-def attempt_castle(white_move: bool) -> list[(int, int)]:
+def attempt_castle(piece_loc: dict[tuple[int, int]], white_move: bool ) -> list[(int, int)]:
     """
-    attempt_white_castle(white_move)
+    attempt_white_castle(piece_loc, white_move)
+    :param piece_loc: piece location dictionary 
     :param white_move: bool for whose turn it is: True = white, False = black
 
     - Depending on the bool white_move the criteria switch for checking the white or black castling

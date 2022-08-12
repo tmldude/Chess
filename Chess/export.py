@@ -1,6 +1,6 @@
 import Move as Mo
 
-def index_to_SAN(index: (int, int)):
+def index_to_SAN(index: tuple[int, int]):
     """
     index_to_SAN(index)
     :param index: Integer tuple as recorded in pos_list
